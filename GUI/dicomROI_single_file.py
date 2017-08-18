@@ -104,6 +104,8 @@ class SearchFolder(Frame):
         # Create 2 column matrix with slice number and echo time values
         self.slice_and_echo = (np.column_stack((slice_number, echo_time)))
 
+        # print(self.slice_and_echo)
+
         self.unique_sorted_echoes = np.array(np.unique(self.slice_and_echo[:,1]))
         self.unique_sorted_slices = np.array(np.unique(self.slice_and_echo[:,0]))
 
@@ -262,14 +264,16 @@ class InteractiveCanvas(Frame):
 
         indexes = np.where(slice_and_echo[:, 0] == user_slice_number)[0]  # indexes of the elements where the user input match the element
 
+        print(indexes)
+
         self.dcm_all_echoes = []
         for i in indexes:  # Go through index values. Check and record those in which echo time (element) matches user input
 
             #get array of arrays with pixel values for all echoes of a slice
             file_path = os.path.join(dcm_folder, dcm_files[i]) # path of the file whose index match user input
             dcm_read = dicom.read_file(file_path)  # read file user wants
-            self.dcm_all_echoes.append(dcm_read.pixel_array)  # extract pixel values
-
+            self.dcm_all_echoes.append(dcm_read.pixel_array)  # extract pixel values of each echo
+            print(self.dcm_all_echoes)
 
             if slice_and_echo[i, 1] == user_echo_time: #Find index for specific echo_time
                 selected_echo_time = user_echo_time
