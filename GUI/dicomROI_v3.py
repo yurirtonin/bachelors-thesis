@@ -297,7 +297,6 @@ class InteractiveCanvas(Frame):
     def get_all_echoes(self):
         return self.dcm_all_echoes
 
-
 class Plot():
 
     def __init__(self,slice_and_echo,first_plot,right_frame):
