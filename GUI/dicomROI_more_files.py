@@ -40,6 +40,17 @@ class SearchFolder(Frame):
         self.left_frame    = left_frame
         self.right_frame   = right_frame
 
+
+        self.entry_frame = Frame(self.parent)
+        self.label_acquisition  = Label(self.entry_frame,text= '(insira na caixa o número de aquisições a serem importadas na análise)')
+        self.acquisition_number = IntVar()
+        self.acquisition_number = Entry(self.entry_frame,width=11,justify=CENTER)
+        self.acquisition_number.delete(0,END)
+        self.acquisition_number.insert(0,'2')
+        self.acquisition_number.pack(padx=2, pady=1, anchor="w",side=LEFT)
+        self.label_acquisition.pack(padx=2, pady=1, anchor="w",side=LEFT)
+
+
         self.search_button = Button(self.parent, text="Buscar pasta", command=self.get_images)  # se colocar search_folder() - com () - ele chama a função automaticamente!
         self.path_box      = Label(self.parent, text='(selecione a pasta com as imagens DICOM)', relief=FLAT)
 
@@ -58,51 +69,115 @@ class SearchFolder(Frame):
 
     def get_images(self):
 
-        if self.first_run == False:
-            for child in self.left_frame.winfo_children(): #destroys all widgets inside of self.left_frame
-                child.destroy()
 
-        # self.dirname = filedialog.askdirectory(parent=root, initialdir="/", title='Please select a directory')
-        self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/601_AXI_OUT_IN PHASE 6 ECOS_PRJ1515_QD/DICOM'
+        # self.dirname           = []
+        self.dcm_folder        = []
+        self.dcm_files         = []
+        self.slice_thickness   = []
+        self.echo_time         = []
+        self.slice_number      = []
+        self.flip_angle        = []
+        self.rescale_intercept = []
+        self.rescale_slope     = []
+        self.slice_and_echo    = np.array([],dtype=np.int64).reshape(0,2)
+        self.slice_and_flip    = []
+        self.FOVx = []
+        self.FOVy = []
 
-        self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname))
-        self.dcm_folder = self.dirname         # Folder with dcm files
-        self.dcm_files = [f for f in listdir(self.dcm_folder) if isfile(join(self.dcm_folder, f))]  # create list with file names
-        self.dcm_files.sort(key=self.natural_keys)  # order files by their number
+        for j in range(0,np.int(self.acquisition_number.get())):
+            pass
 
-        # Declare empty arrays to import parameters later
-        slice_thickness = np.zeros(len(self.dcm_files))
-        echo_time = np.zeros(len(self.dcm_files))
-        slice_number = np.zeros(len(self.dcm_files))
+            if self.first_run == False:
+                for child in self.left_frame.winfo_children(): #destroys all widgets inside of self.left_frame
+                    child.destroy()
 
-        # Read parameters from all files and store them in their respective arrays
-        for i in range(len(self.dcm_files)):
-            file_path = os.path.join(self.dcm_folder, self.dcm_files[i])
+            # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Please select a directory'))
 
-            # ==============================================================================
-            # Read file and tags
-            # ==============================================================================
-            dcm_read = dicom.read_file(file_path)
+            if j == 0:
+                self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
+            else:
+                self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
 
-            slice_number[i]        = dcm_read[0x2001, 0x100A].value
-            slice_thickness[i]     = dcm_read[0x18, 0x50].value
-            echo_time[i]           = dcm_read[0x18, 0x81].value
-            self.rescale_intercept = dcm_read[0x28,0x1052].value
-            self.rescale_slope     = dcm_read[0x28, 0x1053].value
-            #    repetition_time         = dcm_read[0x18,0x80].value
-            #    magnetic_field_strength = dcm_read[0x18,0x87].value
-            #    flip_angle              = dcm_read[0x18,0x1314].value
-            #    gradient                = dcm_read[0x18,0x1318].value #dB/dt
+            # print(self.dirname)
 
-            # Single value for all measurements
-            rows = dcm_read[0x28, 0x10].value
-            columns = dcm_read[0x28, 0x11].value
-            pixel_spacing = dcm_read[0x28, 0x30].value
-        FOVx = rows * pixel_spacing
-        FOVy = columns * pixel_spacing
+            self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname))
+            self.dcm_folder.append(self.dirname) # Folder with dcm files
+            # print(type(self.dcm_folder[j]))
+            # print(self.dcm_folder)
+            self.dcm_files.append( [f for f in listdir(self.dcm_folder[j]) if isfile(join(self.dcm_folder[j], f))]) # create list with file names
+            self.dcm_files[j].sort(key=self.natural_keys)  # order files by their number
 
-        # Create 2 column matrix with slice number and echo time values
-        self.slice_and_echo = (np.column_stack((slice_number, echo_time)))
+            # print(self.dcm_files)
+            # print(self.dcm_files[j])
+            # print(self.slice_thickness)
+
+            # Declare empty arrays to import parameters later
+            self.slice_thickness.append(np.zeros(len(self.dcm_files[j])))
+            # print(self.slice_thickness)
+            self.echo_time.append( np.zeros(len(self.dcm_files[j])))
+            self.slice_number.append( np.zeros(len(self.dcm_files[j])))
+            self.rescale_slope.append(np.zeros(len(self.dcm_files[j])))
+            self.rescale_intercept.append( np.zeros(len(self.dcm_files[j])))
+            self.flip_angle.append( np.zeros(len(self.dcm_files[j])))
+
+            # Read parameters from all files and store them in their respective arrays
+            for i in range(len(self.dcm_files[j])):
+                file_path = os.path.join(self.dcm_folder[j], self.dcm_files[j][i])
+
+                # ==============================================================================
+                # Read file and tags
+                # ==============================================================================
+                dcm_read = dicom.read_file(file_path)
+
+                self.slice_number[j][i]    = dcm_read[0x2001, 0x100A].value
+                self.slice_thickness[j][i] = dcm_read[0x18, 0x50].value
+                self.echo_time[j][i]       = dcm_read[0x18, 0x81].value
+
+                self.rescale_intercept[j][i]  = dcm_read[0x28, 0x1052].value
+                self.rescale_slope[j][i]      = dcm_read[0x28, 0x1053].value
+                #    repetition_time         = dcm_read[0x18,0x80].value
+                #    magnetic_field_strength = dcm_read[0x18,0x87].value
+                #    gradient                = dcm_read[0x18,0x1318].value #dB/dt
+                self.flip_angle[j][i]    =  dcm_read[0x18, 0x1314].value
+
+                # Single value for all measurements
+                self.rows = dcm_read[0x28, 0x10].value
+                self.columns = dcm_read[0x28, 0x11].value
+                self.pixel_spacing = dcm_read[0x28, 0x30].value
+
+            # Create 2 column matrix with slice number and echo time values
+            # self.slice_and_echo = np.column_stack((self.slice_number[j][:], self.flip_angle[j][:]))
+
+            # self.slice_and_echo = np.concatenate(self.slice_and_echo,np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
+            self.slice_and_flip.append(np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
+
+            # print(self.slice_and_flip)
+
+            self.FOVx.append(self.rows * self.pixel_spacing)
+            self.FOVy.append(self.columns * self.pixel_spacing)
+
+
+            #SLICE AND ECHO NAME IS NOT SUITABLE! IT ACTUALLY IS SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION
+            self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])
+
+
+
+        self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # make a flat list (remove separation of interior lists), making one huge list)
+        print(self.dcm_files)
+
+        # Array slice and echo needs to be sorted in the following format:
+        # array = [ [1,10],
+        #           [1,20],
+        #           [2,10],
+                  # [2,20], ...
+
+        # ind = np.lexsort((self.slice_and_echo[:,1],self.slice_and_echo[:,0]))
+        # self.slice_and_echo = self.slice_and_echo[ind]
+        # print(self.slice_and_echo)
+        # print(self.dcm_folder)
+        # print(self.dcm_files)
+
+        print(self.dcm_folder)
 
         self.unique_sorted_echoes = np.array(np.unique(self.slice_and_echo[:,1]))
         self.unique_sorted_slices = np.array(np.unique(self.slice_and_echo[:,0]))
@@ -114,7 +189,7 @@ class SearchFolder(Frame):
     def place_scales_and_canvas(self):
 
         self.slice_number_scale = Scales(self.left_frame,"Slice Number",self.unique_sorted_slices[0],self.unique_sorted_slices[-1])
-        self.echo_time_scale    = Scales(self.left_frame,"Echo Time",0,self.unique_sorted_echoes.size-1)
+        self.echo_time_scale    = Scales(self.left_frame,"Flip angle",0,self.unique_sorted_echoes.size-1)
 
         self.interactive_canvas = InteractiveCanvas(self.left_frame)
 
@@ -258,7 +333,8 @@ class InteractiveCanvas(Frame):
         self.unique_sorted_echoes = np.array(np.unique(slice_and_echo[:,1]))
         scale2_label.configure(text=self.unique_sorted_echoes[user_echo_time])
 
-        user_echo_time = self.unique_sorted_echoes[user_echo_time]
+        self.user_echo_time_index = user_echo_time
+        user_echo_time = self.unique_sorted_echoes[self.user_echo_time_index]
 
         indexes = np.where(slice_and_echo[:, 0] == user_slice_number)[0]  # indexes of the elements where the user input match the element
 
@@ -266,10 +342,14 @@ class InteractiveCanvas(Frame):
         for i in indexes:  # Go through index values. Check and record those in which echo time (element) matches user input
 
             #get array of arrays with pixel values for all echoes of a slice
-            file_path = os.path.join(dcm_folder, dcm_files[i]) # path of the file whose index match user input
-            dcm_read = dicom.read_file(file_path)  # read file user wants
-            self.dcm_all_echoes.append(dcm_read.pixel_array)  # extract pixel values
 
+            for n in range(len(dcm_folder)): # Will evaluate if file dcm_files[i] exists for all the folder we have.
+                                        # It will match for 1 folder only. When it does, isfile returns True, and we
+                                        # record the pixel array for that flip_angle/echo in dcm_all_echoes
+                file_path = os.path.join(dcm_folder[self.user_echo_time_index], dcm_files[i]) # path of the file whose index match user input
+                if os.path.isfile(file_path):
+                    dcm_read = dicom.read_file(file_path)  # read file user wants
+                    self.dcm_all_echoes.append(dcm_read.pixel_array)  # extract pixel values
 
             if slice_and_echo[i, 1] == user_echo_time: #Find index for specific echo_time
                 selected_echo_time = user_echo_time
@@ -277,7 +357,7 @@ class InteractiveCanvas(Frame):
                 index = i
 
 
-        file_path = os.path.join(dcm_folder, dcm_files[index])  # path of the file whose index match user input
+        file_path = os.path.join(dcm_folder[self.user_echo_time_index], dcm_files[index])  # path of the file whose index match user input
         dcm_read = dicom.read_file(file_path)  # read file user wants
         dcm_pixel_values = dcm_read.pixel_array  # extract pixel values
         dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
@@ -399,6 +479,9 @@ class MainApplication(Frame):
         self.secondary_frames.right_frame.pack(padx=5, pady=5, fill=BOTH)
 
         self.search_folder_objects = SearchFolder(self.top_frame,self.left_frame,self.right_frame,self.first_run,self.first_plot)
+
+        self.search_folder_objects.entry_frame.pack(anchor='w')
+
         self.search_folder_objects.search_button.pack(padx=2, pady=1, anchor="w",side=LEFT)
         self.search_folder_objects.path_box.pack(padx=2, pady=1, side=LEFT)
 
