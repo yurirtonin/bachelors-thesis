@@ -137,6 +137,7 @@ class SearchFolder(Frame):
 
                 self.rescale_intercept[j][i]  = dcm_read[0x28, 0x1052].value
                 self.rescale_slope[j][i]      = dcm_read[0x28, 0x1053].value
+
                 #    repetition_time         = dcm_read[0x18,0x80].value
                 #    magnetic_field_strength = dcm_read[0x18,0x87].value
                 #    gradient                = dcm_read[0x18,0x1318].value #dB/dt
@@ -162,10 +163,11 @@ class SearchFolder(Frame):
             #SLICE AND ECHO NAME IS NOT SUITABLE! IT ACTUALLY IS SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION
             self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])
 
-
+        # print(self.rescale_intercept)
+        # print(self.rescale_slope)
 
         self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # make a flat list (remove separation of interior lists), making one huge list)
-        print(self.dcm_files)
+        # print(self.dcm_files)
 
         # Array slice and echo needs to be sorted in the following format:
         # array = [ [1,10],
@@ -179,7 +181,7 @@ class SearchFolder(Frame):
         # print(self.dcm_folder)
         # print(self.dcm_files)
 
-        print(self.dcm_folder)
+        # print(self.dcm_folder)
 
         self.unique_sorted_echoes = np.array(np.unique(self.slice_and_echo[:,1]))
         self.unique_sorted_slices = np.array(np.unique(self.slice_and_echo[:,0]))
@@ -227,7 +229,10 @@ class SearchFolder(Frame):
                                                                     self.dcm_folder,
                                                                     self.dcm_files,
                                                                     self.left_frame,
-                                                                    self.interactive_canvas)
+                                                                    self.interactive_canvas,
+                                                                    self.rescale_intercept,
+                                                                    self.rescale_slope
+                                                                    )
 
 class Scales(Frame):
 
@@ -328,7 +333,7 @@ class InteractiveCanvas(Frame):
     def on_button_release(self, event):
         pass
 
-    def change_image(self, user_slice_number,user_echo_time,scale1_label,scale2_label,slice_and_echo,dcm_folder,dcm_files,left_frame,interactive_canvas):
+    def change_image(self, user_slice_number,user_echo_time,scale1_label,scale2_label,slice_and_echo,dcm_folder,dcm_files,left_frame,interactive_canvas,rescale_intercept,rescale_slope):
 
         scale1_label.configure(text=user_slice_number)
 
@@ -345,13 +350,17 @@ class InteractiveCanvas(Frame):
 
             #get array of arrays with pixel values for all echoes of a slice
 
-            for n in range(len(dcm_folder)): # Will evaluate if file dcm_files[i] exists for all the folder we have.
-                                        # It will match for 1 folder only. When it does, isfile returns True, and we
-                                        # record the pixel array for that flip_angle/echo in dcm_all_echoes
+            for n in range(len(dcm_folder)):
+                # Will evaluate if file dcm_files[i] exists for all the folder we have.
+                # It will match for 1 folder only. When it does, isfile returns True, and we
+                # record the pixel array for that flip_angle/echo in dcm_all_echoes
                 file_path = os.path.join(dcm_folder[self.user_echo_time_index], dcm_files[i]) # path of the file whose index match user input
                 if os.path.isfile(file_path):
                     dcm_read = dicom.read_file(file_path)  # read file user wants
-                    self.dcm_all_echoes.append(dcm_read.pixel_array)  # extract pixel values
+                    # print(rescale_slope[self.user_echo_time_index][0])
+                    dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0]) / rescale_slope[self.user_echo_time_index][0]
+                    self.dcm_all_echoes.append(dcm_pixels)  # extract pixel values
+                    # print(type(dcm_read.pixel_array))
 
             if slice_and_echo[i, 1] == user_echo_time: #Find index for specific echo_time
                 selected_echo_time = user_echo_time
@@ -360,8 +369,11 @@ class InteractiveCanvas(Frame):
 
 
         file_path = os.path.join(dcm_folder[self.user_echo_time_index], dcm_files[index])  # path of the file whose index match user input
+        # print(self.user_echo_time_index)
         dcm_read = dicom.read_file(file_path)  # read file user wants
-        dcm_pixel_values = dcm_read.pixel_array  # extract pixel values
+
+        dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0])/rescale_slope[self.user_echo_time_index][0]
+        dcm_pixel_values = dcm_pixels  # extract pixel values
         dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
         new_tk_image = ImageTk.PhotoImage(dcm_image)  # crete tk image
 
@@ -390,6 +402,7 @@ class Plot():
     def ROI_average(self,dcm_all_echoes,coordinates):
 
         self.dcm_all_echoes = dcm_all_echoes
+        print(self.dcm_all_echoes)
         self.coordinates = coordinates
 
         self.average = np.empty(len(self.dcm_all_echoes))
@@ -517,5 +530,9 @@ if __name__ == '__main__':
 
 # /Users/yurir.tonin/anaconda/pkgs/tk-8.5.18-0/lib/libtk8.5.dylib
 
-#scaling tag
-#offset tag
+
+
+# Proximos passos:
+# 1 - Pontos das medias tem a mesma intensidade. Deve estar errado.
+# 2 - Implementar rescaling de y=ax+b.
+# 3 - Salvar valores do fitting para cada slice number conforme regiao for selcionada.
