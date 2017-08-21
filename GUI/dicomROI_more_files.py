@@ -94,9 +94,11 @@ class SearchFolder(Frame):
             # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Please select a directory'))
 
             if j == 0:
-                self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
+                # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
+                self.dirname = 'C:\Users\Yuri Tonin\Desktop\Dados\PAC001\901_AXI FLIP 2\DICOM''
             else:
-                self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
+                # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
+                self.dirname = 'C:\Users\Yuri Tonin\Desktop\Dados\PAC001\1001_AXI FLIP 10\DICOM''
 
             # print(self.dirname)
 
