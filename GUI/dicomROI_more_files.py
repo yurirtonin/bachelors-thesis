@@ -95,10 +95,10 @@ class SearchFolder(Frame):
 
             if j == 0:
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:\Users\Yuri Tonin\Desktop\Dados\PAC001\901_AXI FLIP 2\DICOM''
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/901_AXI FLIP 2/DICOM'
             else:
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:\Users\Yuri Tonin\Desktop\Dados\PAC001\1001_AXI FLIP 10\DICOM''
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/1001_AXI FLIP 10/DICOM'
 
             # print(self.dirname)
 
@@ -247,7 +247,7 @@ class Scales(Frame):
                                 from_=self.initial_value,
                                 to=self.final_value,
                                 length=self.bar_length,
-                                cursor="hand",
+                                cursor="hand2",
                                 label=self.label_text,
                                 showvalue=0)
 
