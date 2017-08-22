@@ -16,6 +16,9 @@ left_frame.grid(row=2,column=0)
 right_frame = Frame(root, bg="green", width=100, height=100)
 right_frame.grid(row=2,column=1)
 
+right_frame = Frame(root, bg="green", width=100, height=100)
+right_frame.grid(row=2,column=1)
+
 w = Label(top_frame, text="Red Sun", bg="red", fg="white")
 w.pack(pady=10, anchor="w")
 
@@ -23,6 +26,9 @@ w = Label(right_frame, text="Green Grass", bg="green", fg="black")
 w.pack(fill=X, padx=10)
 
 w = Label(left_frame, text="Blue Sky", bg="blue", fg="white")
+w.pack(fill=X, padx=10)
+
+w = Label(right_frame, text="Green Grass", bg="green", fg="black")
 w.pack(fill=X, padx=10)
 
 mainloop()

@@ -24,8 +24,8 @@ class SecondaryFrames(Frame):
 
         self.top_frame = Frame(parent)
         self.left_frame = Frame(parent, width=400)
-        self.right_frame = Frame(parent)#, bg="green")
-        self.right_frame2 = Frame(parent, width=200)
+        self.right_frame = Frame(parent, width=500)#, bg="green")
+        self.right_frame2 = Frame(parent)
 
 
         self.horizontal_line = ttk.Separator(parent, orient=HORIZONTAL)
@@ -291,7 +291,7 @@ class InteractiveCanvas(Frame):
 
         # create rectangle if not yet exist
         if not self.rect:
-            self.rect = self.canvas.create_rectangle(self.x, self.y, 1, 1, outline='green')
+            self.rect = self.canvas.create_rectangle(self.x, self.y, 1, 1, outline='yellow')
 
     def on_move_press(self, event):
         curX = self.canvas.canvasx(event.x)
@@ -386,7 +386,6 @@ class Plot():
         self.amplitudes_list  = []
         self.decay_coefs_list = []
 
-        print('entrei em Plot')
 
     def ROI_average(self,dcm_all_echoes,coordinates,echo_time_scale_value,slice_scale_value):
 
@@ -476,12 +475,48 @@ class Plot():
         self.decay_coefs_list.append(self.fitted_decay_coef)
         self.amplitudes_list.append(self.fitted_amplitude)
 
-        print(self.slices_list)
-
         self.table_values = np.column_stack((self.slices_list,self.amplitudes_list,self.decay_coefs_list))
         self.table_values = self.table_values[np.lexsort((self.table_values[:, 0],))] #sort by 1st column keeping respective 2nd and 3rd columns
 
-        print(self.table_values)
+        self.table_shape = self.table_values.shape
+
+        if self.first_plot == False:
+            for child in self.right_frame2.winfo_children():  # destroys all widgets inside of self.right_frame2
+                child.destroy()
+
+        t = SimpleTable(self.right_frame2, len(self.slices_list)+1 ,3)
+        t.pack(side="top", fill="x")
+        t.set(0,0,"Slice");         t.set(0,1,"Amplitude");         t.set(0,2,"Decay coef")
+
+        for m in range(self.table_shape[0]):
+            for n in range(self.table_shape[1]):
+                if n == 0:
+                    t.set(m+1, n, '{0:.0f}'.format(self.table_values[m][n]))
+                else:
+                    t.set(m+1,n,'{0:.2e}'.format(self.table_values[m][n]))
+
+class SimpleTable(Frame):
+    def __init__(self, parent, rows=2, columns=2):
+        # use black background so it "peeks through" to
+        # form grid lines
+        Frame.__init__(self, parent, background="black")
+        self._widgets = []
+        for row in range(rows):
+            current_row = []
+            for column in range(columns):
+                label = Label(self, text="%s/%s" % (row, column),
+                                 borderwidth=0, width=10)
+                label.grid(row=row, column=column, sticky="nsew", padx=1, pady=1)
+                current_row.append(label)
+            self._widgets.append(current_row)
+
+        for column in range(columns):
+            self.grid_columnconfigure(column, weight=1)
+
+
+    def set(self, row, column, value):
+        widget = self._widgets[row][column]
+        widget.configure(text=value)
 
 class MainApplication(Frame):
     def __init__(self, master):#, *args, **kwargs):
@@ -507,10 +542,10 @@ class MainApplication(Frame):
         self.secondary_frames.left_frame.pack_propagate(0)
         self.secondary_frames.left_frame.pack(padx=5, pady=5, side=LEFT, fill=Y)
         self.secondary_frames.vertical_line.pack(side=LEFT, fill=Y)
-        self.secondary_frames.right_frame.pack(padx=5, pady=5, fill=BOTH)
+        self.secondary_frames.right_frame.pack_propagate(0)
+        self.secondary_frames.right_frame.pack(padx=5, pady=5, side=LEFT, fill=Y)
         self.secondary_frames.vertical_line.pack(side=LEFT, fill=Y)
-        self.secondary_frames.right_frame2.pack_propagate(0)
-        self.secondary_frames.right_frame2.pack(side=RIGHT,padx=5, pady=5, fill=Y)
+        self.secondary_frames.right_frame2.pack(padx=5, pady=20,side=LEFT, fill=Y)
 
 
         self.search_folder_objects = SearchFolder(self.top_frame,self.left_frame,self.right_frame,self.right_frame2,self.first_run,self.first_plot)
@@ -522,7 +557,7 @@ class MainApplication(Frame):
 
 if __name__ == '__main__':
     root = Tk()
-    root.geometry("800x530")
+    root.geometry("1150x530")
     MainApplication(root)
     root.mainloop()
 
