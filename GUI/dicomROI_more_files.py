@@ -3,7 +3,6 @@ matplotlib.use("TkAgg") #backend of matplotlib
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-
 from matplotlib import pyplot as plt
 
 import dicom
@@ -100,22 +99,14 @@ class SearchFolder(Frame):
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
                 self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/1001_AXI FLIP 10/DICOM'
 
-            # print(self.dirname)
-
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname))
             self.dcm_folder.append(self.dirname) # Folder with dcm files
-            # print(type(self.dcm_folder[j]))
-            # print(self.dcm_folder)
+
             self.dcm_files.append( [f for f in listdir(self.dcm_folder[j]) if isfile(join(self.dcm_folder[j], f))]) # create list with file names
             self.dcm_files[j].sort(key=self.natural_keys)  # order files by their number
 
-            # print(self.dcm_files)
-            # print(self.dcm_files[j])
-            # print(self.slice_thickness)
-
             # Declare empty arrays to import parameters later
             self.slice_thickness.append(np.zeros(len(self.dcm_files[j])))
-            # print(self.slice_thickness)
             self.echo_time.append( np.zeros(len(self.dcm_files[j])))
             self.slice_number.append( np.zeros(len(self.dcm_files[j])))
             self.rescale_slope.append(np.zeros(len(self.dcm_files[j])))
@@ -154,8 +145,6 @@ class SearchFolder(Frame):
             # self.slice_and_echo = np.concatenate(self.slice_and_echo,np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
             self.slice_and_flip.append(np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
 
-            # print(self.slice_and_flip)
-
             self.FOVx.append(self.rows * self.pixel_spacing)
             self.FOVy.append(self.columns * self.pixel_spacing)
 
@@ -163,11 +152,8 @@ class SearchFolder(Frame):
             #SLICE AND ECHO NAME IS NOT SUITABLE! IT ACTUALLY IS SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION
             self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])
 
-        # print(self.rescale_intercept)
-        # print(self.rescale_slope)
 
         self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # make a flat list (remove separation of interior lists), making one huge list)
-        # print(self.dcm_files)
 
         # Array slice and echo needs to be sorted in the following format:
         # array = [ [1,10],
@@ -177,11 +163,6 @@ class SearchFolder(Frame):
 
         # ind = np.lexsort((self.slice_and_echo[:,1],self.slice_and_echo[:,0]))
         # self.slice_and_echo = self.slice_and_echo[ind]
-        # print(self.slice_and_echo)
-        # print(self.dcm_folder)
-        # print(self.dcm_files)
-
-        # print(self.dcm_folder)
 
         self.unique_sorted_echoes = np.array(np.unique(self.slice_and_echo[:,1]))
         self.unique_sorted_slices = np.array(np.unique(self.slice_and_echo[:,0]))
@@ -208,7 +189,7 @@ class SearchFolder(Frame):
 
         self.plot = Plot(self.slice_and_echo,self.first_plot,self.right_frame)
         self.select_button = Button(self.left_frame,text='Selecionar região',
-                                    command= lambda: self.plot.ROI_average(self.dcm_all_echoes,self.interactive_canvas.get_ROI()) )
+                                    command= lambda: self.plot.ROI_average(self.dcm_all_echoes,self.interactive_canvas.get_ROI(),self.echo_time_scale.scale_name.get()) )
 
         self.select_button.pack()
 
@@ -328,7 +309,6 @@ class InteractiveCanvas(Frame):
         self.canvas.coords(self.rect, self.start_x, self.start_y, curX, curY)
 
         self.coordenadas = self.canvas.coords(self.rect)
-        # print(self.coordenadas)
 
     def on_button_release(self, event):
         pass
@@ -346,21 +326,23 @@ class InteractiveCanvas(Frame):
         indexes = np.where(slice_and_echo[:, 0] == user_slice_number)[0]  # indexes of the elements where the user input match the element
 
         self.dcm_all_echoes = []
+
         for i in indexes:  # Go through index values. Check and record those in which echo time (element) matches user input
 
             #get array of arrays with pixel values for all echoes of a slice
 
-            for n in range(len(dcm_folder)):
-                # Will evaluate if file dcm_files[i] exists for all the folder we have.
+            for n in range(len(dcm_folder)): #the range of elements of dcm_folder should match the number of different flip angles or echo times
+                # Will evaluate if file dcm_files[i] exists for the folder we have.
                 # It will match for 1 folder only. When it does, isfile returns True, and we
                 # record the pixel array for that flip_angle/echo in dcm_all_echoes
-                file_path = os.path.join(dcm_folder[self.user_echo_time_index], dcm_files[i]) # path of the file whose index match user input
+                file_path = os.path.join(dcm_folder[n], dcm_files[i]) # path of the file whose index match user input
                 if os.path.isfile(file_path):
                     dcm_read = dicom.read_file(file_path)  # read file user wants
-                    # print(rescale_slope[self.user_echo_time_index][0])
                     dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0]) / rescale_slope[self.user_echo_time_index][0]
+                    # dcm_pixels = dcm_pixels/np.max(dcm_pixels)
+                    # dcm_pixels = dcm_read.pixel_array
                     self.dcm_all_echoes.append(dcm_pixels)  # extract pixel values
-                    # print(type(dcm_read.pixel_array))
+
 
             if slice_and_echo[i, 1] == user_echo_time: #Find index for specific echo_time
                 selected_echo_time = user_echo_time
@@ -369,10 +351,11 @@ class InteractiveCanvas(Frame):
 
 
         file_path = os.path.join(dcm_folder[self.user_echo_time_index], dcm_files[index])  # path of the file whose index match user input
-        # print(self.user_echo_time_index)
         dcm_read = dicom.read_file(file_path)  # read file user wants
 
-        dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0])/rescale_slope[self.user_echo_time_index][0]
+        # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0])/rescale_slope[self.user_echo_time_index][0]
+        # dcm_pixels = dcm_pixels / np.max(dcm_pixels)
+        dcm_pixels = dcm_read.pixel_array      #NOT USING RESCALE HERE BECAUSE THIS IS USEF FOR USER VISUALIZATION ONLY
         dcm_pixel_values = dcm_pixels  # extract pixel values
         dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
         new_tk_image = ImageTk.PhotoImage(dcm_image)  # crete tk image
@@ -387,8 +370,6 @@ class InteractiveCanvas(Frame):
     def get_ROI(self):
         return self.coordenadas
 
-    def get_all_echoes(self):
-        return self.dcm_all_echoes
 
 class Plot():
 
@@ -399,24 +380,27 @@ class Plot():
         self.right_frame    = right_frame
 
 
-    def ROI_average(self,dcm_all_echoes,coordinates):
+    def ROI_average(self,dcm_all_echoes,coordinates,echo_time_scale_value):
 
         self.dcm_all_echoes = dcm_all_echoes
-        print(self.dcm_all_echoes)
+        # print(self.dcm_all_echoes)
         self.coordinates = coordinates
+        self.echo_time_scale_value = echo_time_scale_value
 
         self.average = np.empty(len(self.dcm_all_echoes))
 
-        for i in range(len(dcm_all_echoes)):
-            dcm_image = Image.fromarray(dcm_all_echoes[i]).resize((300, 300)) #CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AND THE
+        for i in range(len(self.dcm_all_echoes)):
+
+            dcm_image = Image.fromarray(self.dcm_all_echoes[i]).resize((300, 300)) #CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AND THE
                                                                                 #AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
             croped_dcm_image = dcm_image.crop(coordinates)
             croped_pixel_array = np.array(croped_dcm_image)
             # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
             self.average[i] = np.average(croped_pixel_array)
 
+        print(self.average)
         self.echoes = np.array(np.unique(self.slice_and_echo[:,1]))
-
+        print(self.echoes)
         self.create_plot()
 
 
@@ -440,6 +424,7 @@ class Plot():
             self.the_plot = self.plot_figure.add_subplot(111)
 
         self.the_plot.plot(self.echoes,self.average,'ro')
+        self.the_plot.get_yaxis().set_major_formatter(plt.LogFormatter(10, labelOnlyBase=False))
 
         params = Parameters()
         params.add('amplitude', value=10)
@@ -457,7 +442,7 @@ class Plot():
         self.the_plot.plot(self.fit_x_points,self.fitted_plot)
 
         # self.the_plot.set_title('ROI average X Echo Time')
-        self.the_plot.set_xlabel('Tempo de Echo')
+        self.the_plot.set_xlabel('Ângulo de Flip')
         self.the_plot.set_ylabel('Média da ROI')
 
         if self.first_plot == False:
@@ -533,6 +518,4 @@ if __name__ == '__main__':
 
 
 # Proximos passos:
-# 1 - Pontos das medias tem a mesma intensidade. Deve estar errado.
-# 2 - Implementar rescaling de y=ax+b.
 # 3 - Salvar valores do fitting para cada slice number conforme regiao for selcionada.
