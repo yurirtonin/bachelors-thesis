@@ -25,20 +25,22 @@ class SecondaryFrames(Frame):
         self.top_frame = Frame(parent)
         self.left_frame = Frame(parent, width=400)
         self.right_frame = Frame(parent)#, bg="green")
+        self.right_frame2 = Frame(parent, width=200)
+
 
         self.horizontal_line = ttk.Separator(parent, orient=HORIZONTAL)
         self.vertical_line = ttk.Separator(parent, orient=VERTICAL)
 
 class SearchFolder(Frame):
 
-    def __init__(self,parent,left_frame,right_frame,first_run,first_plot):
+    def __init__(self,parent,left_frame,right_frame,right_frame2,first_run,first_plot):
 
         self.first_run     = first_run
         self.first_plot    = first_plot
         self.parent        = parent
         self.left_frame    = left_frame
         self.right_frame   = right_frame
-
+        self.right_frame2  = right_frame2
 
         self.entry_frame = Frame(self.parent)
         self.label_acquisition  = Label(self.entry_frame,text= '(insira na caixa o número de aquisições a serem importadas na análise)')
@@ -90,12 +92,12 @@ class SearchFolder(Frame):
                 for child in self.left_frame.winfo_children(): #destroys all widgets inside of self.left_frame
                     child.destroy()
 
-            # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Please select a directory'))
-
             if j == 0:
+                # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
                 self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/901_AXI FLIP 2/DICOM'
             else:
+                # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
                 self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/1001_AXI FLIP 10/DICOM'
 
@@ -187,9 +189,9 @@ class SearchFolder(Frame):
         self.echo_time_scale.variable_name.trace("w", self.call_change_image)
 
 
-        self.plot = Plot(self.slice_and_echo,self.first_plot,self.right_frame)
+        self.plot = Plot(self.slice_and_echo,self.first_plot,self.right_frame,self.right_frame2)
         self.select_button = Button(self.left_frame,text='Selecionar região',
-                                    command= lambda: self.plot.ROI_average(self.dcm_all_echoes,self.interactive_canvas.get_ROI(),self.echo_time_scale.scale_name.get()) )
+                                    command= lambda: self.plot.ROI_average(self.dcm_all_echoes,self.interactive_canvas.get_ROI(),self.echo_time_scale.scale_name.get(),self.slice_number_scale.scale_name.get()) )
 
         self.select_button.pack()
 
@@ -370,22 +372,28 @@ class InteractiveCanvas(Frame):
     def get_ROI(self):
         return self.coordenadas
 
-
 class Plot():
 
-    def __init__(self,slice_and_echo,first_plot,right_frame):
+    def __init__(self,slice_and_echo,first_plot,right_frame,right_frame2):
 
         self.slice_and_echo = slice_and_echo
         self.first_plot     = first_plot
         self.right_frame    = right_frame
+        self.right_frame2   = right_frame2
 
 
-    def ROI_average(self,dcm_all_echoes,coordinates,echo_time_scale_value):
+        self.slices_list      = []
+        self.amplitudes_list  = []
+        self.decay_coefs_list = []
+
+        print('entrei em Plot')
+
+    def ROI_average(self,dcm_all_echoes,coordinates,echo_time_scale_value,slice_scale_value):
 
         self.dcm_all_echoes = dcm_all_echoes
-        # print(self.dcm_all_echoes)
         self.coordinates = coordinates
         self.echo_time_scale_value = echo_time_scale_value
+        self.slice_scale_value = slice_scale_value
 
         self.average = np.empty(len(self.dcm_all_echoes))
 
@@ -398,9 +406,7 @@ class Plot():
             # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
             self.average[i] = np.average(croped_pixel_array)
 
-        print(self.average)
         self.echoes = np.array(np.unique(self.slice_and_echo[:,1]))
-        print(self.echoes)
         self.create_plot()
 
 
@@ -435,6 +441,8 @@ class Plot():
         self.fitted_amplitude = fitting.params['amplitude'].value
         self.fitted_decay_coef = fitting.params['decay_coef'].value
 
+        if fitting.success: self.save_fit_params()
+
         self.fit_x_points = np.linspace(self.echoes[0],self.echoes[-1],1000)
 
         self.fitted_plot = self.model_equation(self.fitted_amplitude,self.fitted_decay_coef,self.fit_x_points)
@@ -454,6 +462,27 @@ class Plot():
 
         self.first_plot = False
 
+
+    def save_fit_params(self):
+
+        for i in range(len(self.slices_list)):
+            if self.slices_list[i] == self.slice_scale_value:
+                self.repetition_message = "Você refez o fitting de um slice. A ocorrência anterior foi apagada."
+                print(self.repetition_message)
+                del self.slices_list[i]; del self.decay_coefs_list[i]; del self.amplitudes_list[i]
+                break
+                
+        self.slices_list.append(self.slice_scale_value)
+        self.decay_coefs_list.append(self.fitted_decay_coef)
+        self.amplitudes_list.append(self.fitted_amplitude)
+
+        print(self.slices_list)
+
+        self.table_values = np.column_stack((self.slices_list,self.amplitudes_list,self.decay_coefs_list))
+        self.table_values = self.table_values[np.lexsort((self.table_values[:, 0],))] #sort by 1st column keeping respective 2nd and 3rd columns
+
+        print(self.table_values)
+
 class MainApplication(Frame):
     def __init__(self, master):#, *args, **kwargs):
         Frame.__init__(self, master)#, *args, **kwargs)
@@ -467,9 +496,11 @@ class MainApplication(Frame):
 
         self.secondary_frames  = SecondaryFrames(self.parent)
 
-        self.top_frame            = self.secondary_frames.top_frame
-        self.left_frame           = self.secondary_frames.left_frame
-        self.right_frame          = self.secondary_frames.right_frame
+        self.top_frame       = self.secondary_frames.top_frame
+        self.left_frame      = self.secondary_frames.left_frame
+        self.right_frame     = self.secondary_frames.right_frame
+        self.right_frame2    = self.secondary_frames.right_frame2
+
 
         self.secondary_frames.top_frame.pack(padx=5, pady=5, side=TOP, fill=X)
         self.secondary_frames.horizontal_line.pack(side=TOP, fill=X)
@@ -477,8 +508,12 @@ class MainApplication(Frame):
         self.secondary_frames.left_frame.pack(padx=5, pady=5, side=LEFT, fill=Y)
         self.secondary_frames.vertical_line.pack(side=LEFT, fill=Y)
         self.secondary_frames.right_frame.pack(padx=5, pady=5, fill=BOTH)
+        self.secondary_frames.vertical_line.pack(side=LEFT, fill=Y)
+        self.secondary_frames.right_frame2.pack_propagate(0)
+        self.secondary_frames.right_frame2.pack(side=RIGHT,padx=5, pady=5, fill=Y)
 
-        self.search_folder_objects = SearchFolder(self.top_frame,self.left_frame,self.right_frame,self.first_run,self.first_plot)
+
+        self.search_folder_objects = SearchFolder(self.top_frame,self.left_frame,self.right_frame,self.right_frame2,self.first_run,self.first_plot)
 
         self.search_folder_objects.entry_frame.pack(anchor='w')
 
