@@ -76,6 +76,7 @@ class SearchFolder(Frame):
         self.dcm_files         = []
         self.slice_thickness   = []
         self.echo_time         = []
+        self.repetition_time   = []
         self.slice_number      = []
         self.flip_angle        = []
         self.rescale_intercept = []
@@ -95,11 +96,11 @@ class SearchFolder(Frame):
             if j == 0:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/901_AXI FLIP 2/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2901_AXI FLIP 2/DICOM'
             else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/1001_AXI FLIP 10/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/3001_AXI FLIP 10/DICOM'
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname))
             self.dcm_folder.append(self.dirname) # Folder with dcm files
@@ -109,7 +110,8 @@ class SearchFolder(Frame):
 
             # Declare empty arrays to import parameters later
             self.slice_thickness.append(np.zeros(len(self.dcm_files[j])))
-            self.echo_time.append( np.zeros(len(self.dcm_files[j])))
+            self.echo_time.append(np.zeros(len(self.dcm_files[j])))
+            self.repetition_time.append(np.zeros(len(self.dcm_files[j])))
             self.slice_number.append( np.zeros(len(self.dcm_files[j])))
             self.rescale_slope.append(np.zeros(len(self.dcm_files[j])))
             self.rescale_intercept.append( np.zeros(len(self.dcm_files[j])))
@@ -131,7 +133,7 @@ class SearchFolder(Frame):
                 self.rescale_intercept[j][i]  = dcm_read[0x28, 0x1052].value
                 self.rescale_slope[j][i]      = dcm_read[0x28, 0x1053].value
 
-                #    repetition_time         = dcm_read[0x18,0x80].value
+                self.repetition_time[j][i]         = dcm_read[0x18,0x80].value
                 #    magnetic_field_strength = dcm_read[0x18,0x87].value
                 #    gradient                = dcm_read[0x18,0x1318].value #dB/dt
                 self.flip_angle[j][i]    =  dcm_read[0x18, 0x1314].value
@@ -150,21 +152,20 @@ class SearchFolder(Frame):
             self.FOVx.append(self.rows * self.pixel_spacing)
             self.FOVy.append(self.columns * self.pixel_spacing)
 
-
             #SLICE AND ECHO NAME IS NOT SUITABLE! IT ACTUALLY IS SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION
             self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])
 
+        self.TE = self.echo_time[0][0]*10**-3 #value in ms
+        self.T1 = 678*10**-3    #in ms.  T1 and T2 values are for 1.5 T. Obtained from https://www.ncbi.nlm.nih.gov/pubmed/22302503
+        self.T2 = 72*10**-3
+        self.TR = self.repetition_time[0][0]*10**-3
+
+        print('Repetition time = {0:.2e} s'.format(self.TR))
+
+        self.Ernst_angle = np.arccos(np.exp(-1*self.TE/self.T1))*180/np.pi  #678ms obtained in literature for healthy liver
+        print('Ernst angle = {0:.1f} Degrees'.format(self.Ernst_angle))
 
         self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # make a flat list (remove separation of interior lists), making one huge list)
-
-        # Array slice and echo needs to be sorted in the following format:
-        # array = [ [1,10],
-        #           [1,20],
-        #           [2,10],
-                  # [2,20], ...
-
-        # ind = np.lexsort((self.slice_and_echo[:,1],self.slice_and_echo[:,0]))
-        # self.slice_and_echo = self.slice_and_echo[ind]
 
         self.unique_sorted_echoes = np.array(np.unique(self.slice_and_echo[:,1]))
         self.unique_sorted_slices = np.array(np.unique(self.slice_and_echo[:,0]))
@@ -189,7 +190,7 @@ class SearchFolder(Frame):
         self.echo_time_scale.variable_name.trace("w", self.call_change_image)
 
 
-        self.plot = Plot(self.slice_and_echo,self.first_plot,self.right_frame,self.right_frame2)
+        self.plot = Plot(self.slice_and_echo,self.first_plot,self.right_frame,self.right_frame2,self.TE,self.T1,self.T2,self.TR)
         self.select_button = Button(self.left_frame,text='Selecionar região',
                                     command= lambda: self.plot.ROI_average(self.dcm_all_echoes,self.interactive_canvas.get_ROI(),self.echo_time_scale.scale_name.get(),self.slice_number_scale.scale_name.get()) )
 
@@ -374,7 +375,7 @@ class InteractiveCanvas(Frame):
 
 class Plot():
 
-    def __init__(self,slice_and_echo,first_plot,right_frame,right_frame2):
+    def __init__(self,slice_and_echo,first_plot,right_frame,right_frame2,TE,T1,T2,TR):
 
         self.slice_and_echo = slice_and_echo
         self.first_plot     = first_plot
@@ -384,7 +385,14 @@ class Plot():
 
         self.slices_list      = []
         self.amplitudes_list  = []
-        self.decay_coefs_list = []
+        # self.decay_coefs_list = []
+        self.T1_list = []
+
+        self.TE = TE
+        self.TR = TR
+        # self.T1 = T1
+        self.T2 = T2
+
 
 
     def ROI_average(self,dcm_all_echoes,coordinates,echo_time_scale_value,slice_scale_value):
@@ -399,7 +407,7 @@ class Plot():
         for i in range(len(self.dcm_all_echoes)):
 
             dcm_image = Image.fromarray(self.dcm_all_echoes[i]).resize((300, 300)) #CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AND THE
-                                                                                #AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
+                                                                                   #AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
             croped_dcm_image = dcm_image.crop(coordinates)
             croped_pixel_array = np.array(croped_dcm_image)
             # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
@@ -411,14 +419,16 @@ class Plot():
 
     def residual(self,params, x, data):
         amplitude = params['amplitude']
-        decay_coef = params['decay_coef']
+        T1 = params['T1']
+        # T2 = params['T2']
 
-        model = self.model_equation(amplitude,decay_coef,x)
+        model = self.model_equation(amplitude,self.TE,self.TR,T1,self.T2,x)
 
         return (data - model)
 
-    def model_equation(self,a,b,x):
-        return a*np.exp(-b*x)
+    def model_equation(self,a,TE,TR,T1,T2,x):    # x is the flip angle
+        E1 = np.exp(-TR/T1)
+        return a*np.sin(x)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(x))
 
     def create_plot(self):
 
@@ -432,19 +442,20 @@ class Plot():
         self.the_plot.get_yaxis().set_major_formatter(plt.LogFormatter(10, labelOnlyBase=False))
 
         params = Parameters()
-        params.add('amplitude', value=10)
-        params.add('decay_coef', value=0.007)
+        params.add('amplitude', value=10) #value is the initial value
+        params.add('T1', value = 0.5)
 
         fitting = minimize(self.residual, params, args=(self.echoes, self.average))
 
         self.fitted_amplitude = fitting.params['amplitude'].value
-        self.fitted_decay_coef = fitting.params['decay_coef'].value
+        self.fitted_T1 = fitting.params['T1'].value
+        # self.T2 = fitting.params['T2'].value
 
-        if fitting.success: self.save_fit_params()
+        if fitting.success: self.save_fit_params() # if fitting is succesfull, save the parrameters
 
         self.fit_x_points = np.linspace(self.echoes[0],self.echoes[-1],1000)
 
-        self.fitted_plot = self.model_equation(self.fitted_amplitude,self.fitted_decay_coef,self.fit_x_points)
+        self.fitted_plot = self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,self.fit_x_points)
 
         self.the_plot.plot(self.fit_x_points,self.fitted_plot)
 
@@ -468,14 +479,14 @@ class Plot():
             if self.slices_list[i] == self.slice_scale_value:
                 self.repetition_message = "Você refez o fitting de um slice. A ocorrência anterior foi apagada."
                 print(self.repetition_message)
-                del self.slices_list[i]; del self.decay_coefs_list[i]; del self.amplitudes_list[i]
+                del self.slices_list[i]; del self.T1_list[i]; del self.amplitudes_list[i]
                 break
                 
         self.slices_list.append(self.slice_scale_value)
-        self.decay_coefs_list.append(self.fitted_decay_coef)
+        self.T1_list.append(self.fitted_T1)
         self.amplitudes_list.append(self.fitted_amplitude)
 
-        self.table_values = np.column_stack((self.slices_list,self.amplitudes_list,self.decay_coefs_list))
+        self.table_values = np.column_stack((self.slices_list,self.amplitudes_list,self.T1_list))
         self.table_values = self.table_values[np.lexsort((self.table_values[:, 0],))] #sort by 1st column keeping respective 2nd and 3rd columns
 
         self.table_shape = self.table_values.shape
@@ -486,7 +497,7 @@ class Plot():
 
         t = SimpleTable(self.right_frame2, len(self.slices_list)+1 ,3)
         t.pack(side="top", fill="x")
-        t.set(0,0,"Slice");         t.set(0,1,"Amplitude");         t.set(0,2,"Decay coef")
+        t.set(0,0,"Slice");         t.set(0,1,"Amplitude");         t.set(0,2,"T1")
 
         for m in range(self.table_shape[0]):
             for n in range(self.table_shape[1]):
