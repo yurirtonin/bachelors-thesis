@@ -13,7 +13,7 @@ import numpy as np
 
 import pylab
 
-from prettytable import PrettyTable
+#from prettytable import PrettyTable
 
 N = 1000
 
@@ -36,7 +36,7 @@ my_zero = M0*10**-4 #0.01% of initial value
 
 t = np.linspace(0,TR,N)
 
-tabela = PrettyTable(['Angle','f(0)' ,'t of f(t)=0'])
+#tabela = PrettyTable(['Angle','f(0)' ,'t of f(t)=0'])
 
 for a in range(start_angle,end_angle+1,2):
             
@@ -50,7 +50,7 @@ for a in range(start_angle,end_angle+1,2):
     
     for i in range(len(M_transv)):
         if M_transv[i] < my_zero: 
-            tabela.add_row([a,'{0:.2f}'.format(M_transv[0]),'{0:.2e}'.format(t[i])])
+#            tabela.add_row([a,'{0:.2f}'.format(M_transv[0]),'{0:.2e}'.format(t[i])])
             break
 
 print(tabela)                    

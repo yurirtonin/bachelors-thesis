@@ -1,3 +1,6 @@
+
+
+
 import matplotlib  # these 3 lines need to exist in this way, otherwise matplotlib crashes with tkinter
 matplotlib.use("TkAgg") #backend of matplotlib
 
@@ -16,9 +19,15 @@ from PIL import Image, ImageTk
 
 import numpy as np
 # from scipy import optimize
-from lmfit import minimize, Parameters
+from lmfit import minimize, Parameters # lmfit is the package for fitting
+
+# ATTENTION: This program was first implemented for an analysis of slice numbers and echo times. Only later it was
+# switched to analyze slice number and flip angle. Therefore, lost of arrays and variables that coitain "echo" in their
+# names posses FLIP ANGLE values, and NOT ECHO TIME values.
 
 class SecondaryFrames(Frame):
+
+    # This classes declares frames to divide de main window in regions for different widgets
 
     def __init__(self,parent):
 
@@ -27,11 +36,14 @@ class SecondaryFrames(Frame):
         self.right_frame = Frame(parent, width=500)#, bg="green")
         self.right_frame2 = Frame(parent)
 
-
         self.horizontal_line = ttk.Separator(parent, orient=HORIZONTAL)
         self.vertical_line = ttk.Separator(parent, orient=VERTICAL)
 
 class SearchFolder(Frame):
+
+# This class is responsible for selecting the folders where acquistion files area and, after that is done, placing the
+# scales and canvas used for selecting a specific image and drawing a region of interest (ROI) on it. The last action
+# performed by this class is to select the ROI through a button, so that data is exported to a plot.
 
     def __init__(self,parent,left_frame,right_frame,right_frame2,first_run,first_plot):
 
@@ -90,10 +102,15 @@ class SearchFolder(Frame):
             pass
 
             if self.first_run == False:
-                for child in self.left_frame.winfo_children(): #destroys all widgets inside of self.left_frame
+            # Destroys all widgets inside of self.left_frame if this is not the first time the widget is being created.
+            # This is done so that the widget can be "refreshed" without a new one appearing on the screen
+                for child in self.left_frame.winfo_children():
                     child.destroy()
 
             if j == 0:
+            # A conditional for selecting all the folders. This is only needed if you want to declare by hand
+            # the folder with the dicom files. If you want the interface to search the folder to appear when you click
+            # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
                 self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2901_AXI FLIP 2/DICOM'
@@ -102,11 +119,11 @@ class SearchFolder(Frame):
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
                 self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/3001_AXI FLIP 10/DICOM'
 
-            self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname))
-            self.dcm_folder.append(self.dirname) # Folder with dcm files
+            self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
+            self.dcm_folder.append(self.dirname) # Saves the folder path with dcm files to a list
 
-            self.dcm_files.append( [f for f in listdir(self.dcm_folder[j]) if isfile(join(self.dcm_folder[j], f))]) # create list with file names
-            self.dcm_files[j].sort(key=self.natural_keys)  # order files by their number
+            self.dcm_files.append( [f for f in listdir(self.dcm_folder[j]) if isfile(join(self.dcm_folder[j], f))]) # create list with the names of the files in the current selected folder
+            self.dcm_files[j].sort(key=self.natural_keys)  # order files by their number in file name
 
             # Declare empty arrays to import parameters later
             self.slice_thickness.append(np.zeros(len(self.dcm_files[j])))
@@ -143,42 +160,44 @@ class SearchFolder(Frame):
                 self.columns = dcm_read[0x28, 0x11].value
                 self.pixel_spacing = dcm_read[0x28, 0x30].value
 
-            # Create 2 column matrix with slice number and echo time values
-            # self.slice_and_echo = np.column_stack((self.slice_number[j][:], self.flip_angle[j][:]))
 
-            # self.slice_and_echo = np.concatenate(self.slice_and_echo,np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
             self.slice_and_flip.append(np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
 
             self.FOVx.append(self.rows * self.pixel_spacing)
             self.FOVy.append(self.columns * self.pixel_spacing)
 
-            #SLICE AND ECHO NAME IS NOT SUITABLE! IT ACTUALLY IS SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION
-            self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])
+            self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])  #THE NAME "SLICE AND ECHO" IS NOT SUITABLE! IT SHOULD ACTUALLY BE SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION WAS CREATED FOR ECHO TIMES!
 
-        self.TE = self.echo_time[0][0]*10**-3 #value in ms
-        self.T1 = 678*10**-3    #in ms.  T1 and T2 values are for 1.5 T. Obtained from https://www.ncbi.nlm.nih.gov/pubmed/22302503
-        self.T2 = 72*10**-3
-        self.TR = self.repetition_time[0][0]*10**-3
 
-        print('Repetition time = {0:.2e} s'.format(self.TR))
+        self.TE = self.echo_time[0][0]*10**-3       # Value in seconds. Echo time should be the same for all elements of
+                                                    # the array if we are dealing with the case for different flip angles
+        self.TR = self.repetition_time[0][0]*10**-3 # Values here work just like for echo time
+        self.T1 = 678*10**-3                        # Value in seconds. T1 and T2 values are for 1.5 T
+        self.T2 = 72*10**-3                         # Obtained from https://www.ncbi.nlm.nih.gov/pubmed/22302503
+
 
         self.Ernst_angle = np.arccos(np.exp(-1*self.TE/self.T1))*180/np.pi  #678ms obtained in literature for healthy liver
-        print('Ernst angle = {0:.1f} Degrees'.format(self.Ernst_angle))
 
-        self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # make a flat list (remove separation of interior lists), making one huge list)
+        print('Echo time       = {0:.2e} seconds'.format(self.TR))
+        print('Repetition time = {0:.2e} seconds'.format(self.TR))
+        print('Ernst angle     = {0:.1f} Degrees'.format(self.Ernst_angle))
 
-        self.unique_sorted_echoes = np.array(np.unique(self.slice_and_echo[:,1]))
-        self.unique_sorted_slices = np.array(np.unique(self.slice_and_echo[:,0]))
+        self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # Makes a flat list (remove separation of interior lists, creating one huge list)
 
-        self.place_scales_and_canvas()
+        self.unique_sorted_echoes = np.array(np.unique(self.slice_and_echo[:,1])) #Removing repetitions and ordering values
+        self.unique_sorted_slices = np.array(np.unique(self.slice_and_echo[:,0])) #Removing repetitions and ordering values
 
-        self.first_run = False
+        self.place_scales_and_canvas() # Puts everything on canvas
+
+        self.first_run = False         # Declares that the first run has already been completed
 
     def place_scales_and_canvas(self):
 
+        # Creating scale objects from the class
         self.slice_number_scale = Scales(self.left_frame,"Slice Number",self.unique_sorted_slices[0],self.unique_sorted_slices[-1])
         self.echo_time_scale    = Scales(self.left_frame,"Flip angle",0,self.unique_sorted_echoes.size-1)
 
+        #Creating interactive canvas object where images are shown and ROI selected
         self.interactive_canvas = InteractiveCanvas(self.left_frame)
 
         self.slice_number_scale.scales_frame.pack(anchor='w')
@@ -186,18 +205,22 @@ class SearchFolder(Frame):
 
         self.interactive_canvas.pack(pady=15)
 
-        self.slice_number_scale.variable_name.trace("w", self.call_change_image)
+        self.slice_number_scale.variable_name.trace("w", self.call_change_image) #When scale is changed, calls self.call_change_image
         self.echo_time_scale.variable_name.trace("w", self.call_change_image)
 
-
+        # Creates plot object to visualize data and fitting
         self.plot = Plot(self.slice_and_echo,self.first_plot,self.right_frame,self.right_frame2,self.TE,self.T1,self.T2,self.TR)
+
+        # Creates button to select ROI after it is drawed.
         self.select_button = Button(self.left_frame,text='Selecionar região',
                                     command= lambda: self.plot.ROI_average(self.dcm_all_echoes,self.interactive_canvas.get_ROI(),self.echo_time_scale.scale_name.get(),self.slice_number_scale.scale_name.get()) )
 
         self.select_button.pack()
 
-
     def call_change_image(self,*args): #need *args to take arguments that are automatically passed by the tracing mechanism
+
+    # Obtains the scale value to that this values can be passed to the interactive_canvas class, where they will be used
+    # for the displayed image to be changed to an image corresponding to the new values
 
         self.scale1_value   = self.slice_number_scale.scale_name.get()
         self.scale2_value   = self.echo_time_scale.scale_name.get()
@@ -219,6 +242,9 @@ class SearchFolder(Frame):
                                                                     )
 
 class Scales(Frame):
+
+# This class simply declares the characteristics of the Scales used for selecting images. They are declared here, but
+# only created (packed) in the GUI at SearchFolder class, inside of place_scales_and_canvas method.
 
     def __init__(self,parent,label_text,initial_value,final_value,*args):
         self.parent        = parent
@@ -250,6 +276,9 @@ class Scales(Frame):
             self.variable_name.get()
 
 class InteractiveCanvas(Frame):
+
+# In this class all the functionality for displaying the proper image on canvas and drawing the ROI on top of the imaged
+# is created. There is also a function that returns the ROI coordinates.
 
     def __init__(self,parent):
         Frame.__init__(self,parent)
@@ -318,15 +347,15 @@ class InteractiveCanvas(Frame):
 
     def change_image(self, user_slice_number,user_echo_time,scale1_label,scale2_label,slice_and_echo,dcm_folder,dcm_files,left_frame,interactive_canvas,rescale_intercept,rescale_slope):
 
-        scale1_label.configure(text=user_slice_number)
+        scale1_label.configure(text=user_slice_number) # Displays value of the slice number
 
         self.unique_sorted_echoes = np.array(np.unique(slice_and_echo[:,1]))
-        scale2_label.configure(text=self.unique_sorted_echoes[user_echo_time])
+        scale2_label.configure(text=self.unique_sorted_echoes[user_echo_time]) # Displays value of the flip angle
 
-        self.user_echo_time_index = user_echo_time
-        user_echo_time = self.unique_sorted_echoes[self.user_echo_time_index]
+        self.user_echo_time_index = user_echo_time # Declares the value from the scale (that may note have tha same numerical value as the echo) as an index
+        user_echo_time = self.unique_sorted_echoes[self.user_echo_time_index] #Selects echo time from the array of echo time values according to the index declared above
 
-        indexes = np.where(slice_and_echo[:, 0] == user_slice_number)[0]  # indexes of the elements where the user input match the element
+        indexes = np.where(slice_and_echo[:, 0] == user_slice_number)[0]  # indexes of the elements where the user input match the slice number
 
         self.dcm_all_echoes = []
 
@@ -334,10 +363,10 @@ class InteractiveCanvas(Frame):
 
             #get array of arrays with pixel values for all echoes of a slice
 
-            for n in range(len(dcm_folder)): #the range of elements of dcm_folder should match the number of different flip angles or echo times
-                # Will evaluate if file dcm_files[i] exists for the folder we have.
+            for n in range(len(dcm_folder)): #the range of elements of dcm_folder should match the number of different flip angles/echo times
+                # Will evaluate if the i_th file dcm_files[i] exists for the folder we have.
                 # It will match for 1 folder only. When it does, isfile returns True, and we
-                # record the pixel array for that flip_angle/echo in dcm_all_echoes
+                # record the pixel array for that flip_angle/echo_time in dcm_all_echoes
                 file_path = os.path.join(dcm_folder[n], dcm_files[i]) # path of the file whose index match user input
                 if os.path.isfile(file_path):
                     dcm_read = dicom.read_file(file_path)  # read file user wants
@@ -347,20 +376,15 @@ class InteractiveCanvas(Frame):
                     self.dcm_all_echoes.append(dcm_pixels)  # extract pixel values
 
 
-            if slice_and_echo[i, 1] == user_echo_time: #Find index for specific echo_time
-                selected_echo_time = user_echo_time
-                selected_slice_number = slice_and_echo[i, 0]
-                index = i
+            if slice_and_echo[i, 1] == user_echo_time: index = i #Finds index for specific echo_time
 
 
         file_path = os.path.join(dcm_folder[self.user_echo_time_index], dcm_files[index])  # path of the file whose index match user input
         dcm_read = dicom.read_file(file_path)  # read file user wants
 
-        # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0])/rescale_slope[self.user_echo_time_index][0]
-        # dcm_pixels = dcm_pixels / np.max(dcm_pixels)
-        dcm_pixels = dcm_read.pixel_array      #NOT USING RESCALE HERE BECAUSE THIS IS USEF FOR USER VISUALIZATION ONLY
+        dcm_pixels = dcm_read.pixel_array      #NOT USING RESCALE HERE BECAUSE THIS IS USED FOR USER VISUALIZATION ONLY. Rescaling is done only in the previous for loop, since that data is the one used for plotting/fitting
         dcm_pixel_values = dcm_pixels  # extract pixel values
-        dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
+        dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
         new_tk_image = ImageTk.PhotoImage(dcm_image)  # crete tk image
 
         imagem = Label(left_frame, image='')  # Create empty image to keep a reference of image. That way, GarbageCollector won't throw away image (http://effbot.org/pyfaq/why-do-my-tkinter-images-not-place_interactive_canvasear.htm)
@@ -375,13 +399,14 @@ class InteractiveCanvas(Frame):
 
 class Plot():
 
+    # Creates the plot. Calculates average of each ROI and performs fitting algorithm
+
     def __init__(self,slice_and_echo,first_plot,right_frame,right_frame2,TE,T1,T2,TR):
 
         self.slice_and_echo = slice_and_echo
         self.first_plot     = first_plot
         self.right_frame    = right_frame
         self.right_frame2   = right_frame2
-
 
         self.slices_list      = []
         self.amplitudes_list  = []
@@ -393,8 +418,6 @@ class Plot():
         # self.T1 = T1
         self.T2 = T2
 
-
-
     def ROI_average(self,dcm_all_echoes,coordinates,echo_time_scale_value,slice_scale_value):
 
         self.dcm_all_echoes = dcm_all_echoes
@@ -405,6 +428,8 @@ class Plot():
         self.average = np.empty(len(self.dcm_all_echoes))
 
         for i in range(len(self.dcm_all_echoes)):
+
+            #Calculates the average of the ROI for each echo_time/flip_angle with that slice number
 
             dcm_image = Image.fromarray(self.dcm_all_echoes[i]).resize((300, 300)) #CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AND THE
                                                                                    #AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
@@ -418,6 +443,7 @@ class Plot():
 
 
     def residual(self,params, x, data):
+        # Parameters to be fitted must be declared below
         amplitude = params['amplitude']
         T1 = params['T1']
         # T2 = params['T2']
@@ -426,7 +452,8 @@ class Plot():
 
         return (data - model)
 
-    def model_equation(self,a,TE,TR,T1,T2,x):    # x is the flip angle
+    def model_equation(self,a,TE,TR,T1,T2,x): # x is the flip angle
+        #This is the equation to be fitted. If you change input parameters, remember to also change them when this method is called
         E1 = np.exp(-TR/T1)
         return a*np.sin(x)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(x))
 
@@ -475,23 +502,25 @@ class Plot():
 
     def save_fit_params(self):
 
-        for i in range(len(self.slices_list)):
+        #Save fit params and shows them at a table
+
+        for i in range(len(self.slices_list)): # Guarantees that only 1 line per slice number fit will appear at the table
             if self.slices_list[i] == self.slice_scale_value:
                 self.repetition_message = "Você refez o fitting de um slice. A ocorrência anterior foi apagada."
                 print(self.repetition_message)
-                del self.slices_list[i]; del self.T1_list[i]; del self.amplitudes_list[i]
+                del self.slices_list[i]; del self.T1_list[i]; del self.amplitudes_list[i] #deletes the previous occurence of that slice number in the list
                 break
                 
         self.slices_list.append(self.slice_scale_value)
         self.T1_list.append(self.fitted_T1)
         self.amplitudes_list.append(self.fitted_amplitude)
 
-        self.table_values = np.column_stack((self.slices_list,self.amplitudes_list,self.T1_list))
+        self.table_values = np.column_stack((self.slices_list,self.amplitudes_list,self.T1_list)) # Create a matrix with 3 columns, each column being one of the lists declared above
         self.table_values = self.table_values[np.lexsort((self.table_values[:, 0],))] #sort by 1st column keeping respective 2nd and 3rd columns
 
         self.table_shape = self.table_values.shape
 
-        if self.first_plot == False:
+        if self.first_plot == False: #Destroys previous table and create a new one with refreshed values
             for child in self.right_frame2.winfo_children():  # destroys all widgets inside of self.right_frame2
                 child.destroy()
 
@@ -501,12 +530,15 @@ class Plot():
 
         for m in range(self.table_shape[0]):
             for n in range(self.table_shape[1]):
-                if n == 0:
+                if n == 0: # This conditional is used only for the formating of the first column numbers to be different from the formating of the other columns
                     t.set(m+1, n, '{0:.0f}'.format(self.table_values[m][n]))
                 else:
                     t.set(m+1,n,'{0:.2e}'.format(self.table_values[m][n]))
 
 class SimpleTable(Frame):
+
+    #Simply formats a table to display fit parameters values.
+
     def __init__(self, parent, rows=2, columns=2):
         # use black background so it "peeks through" to
         # form grid lines
@@ -530,6 +562,10 @@ class SimpleTable(Frame):
         widget.configure(text=value)
 
 class MainApplication(Frame):
+
+    # This is the main application that contains the core of the program. Places secondary frames and the
+    # search folder objects that are used to initialize the rest of the program
+
     def __init__(self, master):#, *args, **kwargs):
         Frame.__init__(self, master)#, *args, **kwargs)
 
@@ -572,31 +608,3 @@ if __name__ == '__main__':
     MainApplication(root)
     root.mainloop()
 
-
-
-# install_name_tool - change
-# "/System/Library/Frameworks/Tk.framework/Versions/8.5/Tk"
-# "/Users/yurir.tonin/anaconda/pkgs/tk-8.5.18-0/lib/libtk8.5.dylib"
-# anaconda / lib / python3.5 / lib - dynload / _tkinter.so
-#
-# install_name_tool -change
-# "/System/Library/Frameworks/Tcl.framework/Versions/8.5/Tcl"
-# "/Users/yurir.tonin/anaconda/pkgs/tk-8.5.18-0/lib/libtcl8.5.dylib"
-# anaconda/lib/python3.5/lib-dynload/_tkinter.so
-#
-# install_name_tool -change
-# "/System/Library/Frameworks/Tk.framework/Versions/8.5/Tk"
-# "/Users/yurir.tonin/anaconda/pkgs/tk-8.5.18-0/lib/libtcl8.5.dylib"
-# anaconda/pkgs/python-3.5.2-0/lib/python3.5/lib-dynload/_tkinter.so
-#
-# install_name_tool -change
-# "/System/Library/Frameworks/Tcl.framework/Versions/8.5/Tcl"
-# "/Users/yurir.tonin/anaconda/pkgs/tk-8.5.18-0/lib/libtcl8.5.dylib"
-# anaconda/pkgs/python-3.5.2-0/lib/python3.5/lib-dynload/_tkinter.so
-
-# /Users/yurir.tonin/anaconda/pkgs/tk-8.5.18-0/lib/libtk8.5.dylib
-
-
-
-# Proximos passos:
-# 3 - Salvar valores do fitting para cada slice number conforme regiao for selcionada.
