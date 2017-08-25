@@ -89,6 +89,7 @@ class SearchFolder(Frame):
         self.slice_thickness   = []
         self.echo_time         = []
         self.repetition_time   = []
+        self.gradient_echo_train_length = []
         self.slice_number      = []
         self.flip_angle        = []
         self.rescale_intercept = []
@@ -129,6 +130,7 @@ class SearchFolder(Frame):
             self.slice_thickness.append(np.zeros(len(self.dcm_files[j])))
             self.echo_time.append(np.zeros(len(self.dcm_files[j])))
             self.repetition_time.append(np.zeros(len(self.dcm_files[j])))
+            self.gradient_echo_train_length.append(np.zeros(len(self.dcm_files[j])))
             self.slice_number.append( np.zeros(len(self.dcm_files[j])))
             self.rescale_slope.append(np.zeros(len(self.dcm_files[j])))
             self.rescale_intercept.append( np.zeros(len(self.dcm_files[j])))
@@ -150,15 +152,17 @@ class SearchFolder(Frame):
                 self.rescale_intercept[j][i]  = dcm_read[0x28, 0x1052].value
                 self.rescale_slope[j][i]      = dcm_read[0x28, 0x1053].value
 
-                self.repetition_time[j][i]         = dcm_read[0x18,0x80].value
-                #    magnetic_field_strength = dcm_read[0x18,0x87].value
-                #    gradient                = dcm_read[0x18,0x1318].value #dB/dt
+                self.repetition_time[j][i]            = dcm_read[0x18,0x80].value
+                self.gradient_echo_train_length[j][i] = dcm_read[0x18,0x91].value
+                # magnetic_field_strength = dcm_read[0x18,0x87].value
+                # gradient                = dcm_read[0x18,0x1318].value #dB/dt
                 self.flip_angle[j][i]    =  dcm_read[0x18, 0x1314].value
 
                 # Single value for all measurements
-                self.rows = dcm_read[0x28, 0x10].value
-                self.columns = dcm_read[0x28, 0x11].value
+                self.rows          = dcm_read[0x28, 0x10].value
+                self.columns       = dcm_read[0x28, 0x11].value
                 self.pixel_spacing = dcm_read[0x28, 0x30].value
+
 
 
             self.slice_and_flip.append(np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
@@ -168,17 +172,22 @@ class SearchFolder(Frame):
 
             self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])  #THE NAME "SLICE AND ECHO" IS NOT SUITABLE! IT SHOULD ACTUALLY BE SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION WAS CREATED FOR ECHO TIMES!
 
+        print(dcm_read.dir())  # All Dicom tag available
 
-        self.TE = self.echo_time[0][0]*10**-3       # Value in seconds. Echo time should be the same for all elements of
-                                                    # the array if we are dealing with the case for different flip angles
-        self.TR = self.repetition_time[0][0]*10**-3 # Values here work just like for echo time
-        self.T1 = 678*10**-3                        # Value in seconds. T1 and T2 values are for 1.5 T
-        self.T2 = 72*10**-3                         # Obtained from https://www.ncbi.nlm.nih.gov/pubmed/22302503
+        print('Echo Train Length = {0:.0f}'.format(self.gradient_echo_train_length[0][0]))
+        self.total_repetition_time = np.multiply(self.repetition_time,self.gradient_echo_train_length)
+        # print(self.total_repetition_time)
+
+        self.TE = self.echo_time[0][0]*10**-3  # Value in seconds. Echo time should be the same for all elements of
+                                               # the array if we are dealing with the case for different flip angles
+        self.TR = self.total_repetition_time[0][0]*10**-3 # Values here work just like for echo time
+        self.T1 = 678*10**-3                              # Value in seconds. T1 and T2 values are for 1.5 T
+        self.T2 = 72*10**-3                               # Obtained from https://www.ncbi.nlm.nih.gov/pubmed/22302503
 
 
-        self.Ernst_angle = np.arccos(np.exp(-1*self.TE/self.T1))*180/np.pi  #678ms obtained in literature for healthy liver
+        self.Ernst_angle = np.arccos(np.exp(-1*self.TR/self.T1))*180/np.pi  #678ms obtained in literature for healthy liver
 
-        print('Echo time       = {0:.2e} seconds'.format(self.TR))
+        print('Echo time       = {0:.2e} seconds'.format(self.TE))
         print('Repetition time = {0:.2e} seconds'.format(self.TR))
         print('Ernst angle     = {0:.1f} Degrees'.format(self.Ernst_angle))
 
@@ -455,7 +464,8 @@ class Plot():
     def model_equation(self,a,TE,TR,T1,T2,x): # x is the flip angle
         #This is the equation to be fitted. If you change input parameters, remember to also change them when this method is called
         E1 = np.exp(-TR/T1)
-        return a*np.sin(x)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(x))
+        # return a*np.sin(x)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(x))
+        return a*x/(1+0.5*E1*x**2/(1-E1)) #approximation for flip angle << Ernst angle
 
     def create_plot(self):
 
@@ -469,7 +479,7 @@ class Plot():
         self.the_plot.get_yaxis().set_major_formatter(plt.LogFormatter(10, labelOnlyBase=False))
 
         params = Parameters()
-        params.add('amplitude', value=10) #value is the initial value
+        params.add('amplitude', value=1) #value is the initial value for fitting
         params.add('T1', value = 0.5)
 
         fitting = minimize(self.residual, params, args=(self.echoes, self.average))
