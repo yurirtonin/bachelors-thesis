@@ -89,15 +89,16 @@ class SearchFolder(Frame):
         self.slice_thickness   = []
         self.echo_time         = []
         self.repetition_time   = []
-        self.gradient_echo_train_length = []
         self.slice_number      = []
         self.flip_angle        = []
         self.rescale_intercept = []
         self.rescale_slope     = []
-        self.slice_and_echo    = np.array([],dtype=np.int64).reshape(0,2)
         self.slice_and_flip    = []
-        self.FOVx = []
-        self.FOVy = []
+        self.FOVx              = []
+        self.FOVy              = []
+        self.gradient_echo_train_length = []
+        self.slice_and_echo    = np.array([],dtype=np.int64).reshape(0,2)
+
 
         for j in range(0,np.int(self.acquisition_number.get())):
             pass
@@ -114,11 +115,11 @@ class SearchFolder(Frame):
             # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2901_AXI FLIP 2/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/901_AXI FLIP 2/DICOM'
             else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/3001_AXI FLIP 10/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/1001_AXI FLIP 10/DICOM'
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
             self.dcm_folder.append(self.dirname) # Saves the folder path with dcm files to a list
@@ -172,18 +173,25 @@ class SearchFolder(Frame):
 
             self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])  #THE NAME "SLICE AND ECHO" IS NOT SUITABLE! IT SHOULD ACTUALLY BE SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION WAS CREATED FOR ECHO TIMES!
 
-        print(dcm_read.dir())  # All Dicom tag available
+
+        # print(self.rescale_slope[0][0])
+        # print(self.rescale_intercept[0][0])
+        # print(self.rescale_slope[1][0])
+        # print(self.rescale_intercept[1][0])
+
+        # print(dcm_read.dir())  # All Dicom tag available
 
         print('Echo Train Length = {0:.0f}'.format(self.gradient_echo_train_length[0][0]))
         self.total_repetition_time = np.multiply(self.repetition_time,self.gradient_echo_train_length)
+        # self.total_repetition_time = np.multiply(self.repetition_time,1)
         # print(self.total_repetition_time)
 
-        self.TE = self.echo_time[0][0]*10**-3  # Value in seconds. Echo time should be the same for all elements of
-                                               # the array if we are dealing with the case for different flip angles
+
         self.TR = self.total_repetition_time[0][0]*10**-3 # Values here work just like for echo time
         self.T1 = 678*10**-3                              # Value in seconds. T1 and T2 values are for 1.5 T
         self.T2 = 72*10**-3                               # Obtained from https://www.ncbi.nlm.nih.gov/pubmed/22302503
-
+        self.TE = self.echo_time[0][0]*10**-3             # Value in seconds. Echo time should be the same for all elements of
+                                                          # the array if we are dealing with the case for different flip angles
 
         self.Ernst_angle = np.arccos(np.exp(-1*self.TR/self.T1))*180/np.pi  #678ms obtained in literature for healthy liver
 
@@ -361,7 +369,7 @@ class InteractiveCanvas(Frame):
         self.unique_sorted_echoes = np.array(np.unique(slice_and_echo[:,1]))
         scale2_label.configure(text=self.unique_sorted_echoes[user_echo_time]) # Displays value of the flip angle
 
-        self.user_echo_time_index = user_echo_time # Declares the value from the scale (that may note have tha same numerical value as the echo) as an index
+        self.user_echo_time_index = user_echo_time # Declares the value from the scale (that may have tha same numerical value as the echo) as an index
         user_echo_time = self.unique_sorted_echoes[self.user_echo_time_index] #Selects echo time from the array of echo time values according to the index declared above
 
         indexes = np.where(slice_and_echo[:, 0] == user_slice_number)[0]  # indexes of the elements where the user input match the slice number
@@ -371,7 +379,7 @@ class InteractiveCanvas(Frame):
         for i in indexes:  # Go through index values. Check and record those in which echo time (element) matches user input
 
             #get array of arrays with pixel values for all echoes of a slice
-
+            self.which_folder = 0
             for n in range(len(dcm_folder)): #the range of elements of dcm_folder should match the number of different flip angles/echo times
                 # Will evaluate if the i_th file dcm_files[i] exists for the folder we have.
                 # It will match for 1 folder only. When it does, isfile returns True, and we
@@ -379,11 +387,13 @@ class InteractiveCanvas(Frame):
                 file_path = os.path.join(dcm_folder[n], dcm_files[i]) # path of the file whose index match user input
                 if os.path.isfile(file_path):
                     dcm_read = dicom.read_file(file_path)  # read file user wants
-                    dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0]) / rescale_slope[self.user_echo_time_index][0]
+                    # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0]) / rescale_slope[self.user_echo_time_index][0]
+                    dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.which_folder][0]) / rescale_slope[self.which_folder][0]
                     # dcm_pixels = dcm_pixels/np.max(dcm_pixels)
                     # dcm_pixels = dcm_read.pixel_array
                     self.dcm_all_echoes.append(dcm_pixels)  # extract pixel values
 
+                self.which_folder += 1    # used as index to select the right rescaling for the pixel array
 
             if slice_and_echo[i, 1] == user_echo_time: index = i #Finds index for specific echo_time
 
@@ -447,6 +457,8 @@ class Plot():
             # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
             self.average[i] = np.average(croped_pixel_array)
 
+        print(self.average)
+        print(self.average[1]/self.average[0])
         self.echoes = np.array(np.unique(self.slice_and_echo[:,1]))
         self.create_plot()
 
@@ -479,8 +491,8 @@ class Plot():
         self.the_plot.get_yaxis().set_major_formatter(plt.LogFormatter(10, labelOnlyBase=False))
 
         params = Parameters()
-        params.add('amplitude', value=1) #value is the initial value for fitting
-        params.add('T1', value = 0.5)
+        params.add('amplitude', value=1000,min=50) #value is the initial value for fitting
+        params.add('T1', value = 5,min=0.2)
 
         fitting = minimize(self.residual, params, args=(self.echoes, self.average))
 
@@ -488,9 +500,19 @@ class Plot():
         self.fitted_T1 = fitting.params['T1'].value
         # self.T2 = fitting.params['T2'].value
 
+
+        E1 = np.exp(-self.TR/self.fitted_T1)
+        # print('amplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
+        # print('T1 fitted = {0:.2e}'.format(self.fitted_T1))
+        # print('TR = {0:.2e}'.format(self.TR))
+        #
+        # print('E1 = {0:.2e}'.format(E1))
+        # print('denominador = {0:.2e}'.format(0.5*E1/(1-E1)))
+
+
         if fitting.success: self.save_fit_params() # if fitting is succesfull, save the parrameters
 
-        self.fit_x_points = np.linspace(self.echoes[0],self.echoes[-1],1000)
+        self.fit_x_points = np.linspace(self.echoes[0],10*self.echoes[-1],1000)
 
         self.fitted_plot = self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,self.fit_x_points)
 
@@ -618,3 +640,8 @@ if __name__ == '__main__':
     MainApplication(root)
     root.mainloop()
 
+
+
+#Possible improvements to the code:
+#   1 - Many variables imported from the DICOM header have a constant value for all images, but they are being imported
+#       as arrays. Change them to a single value may save computational time.
