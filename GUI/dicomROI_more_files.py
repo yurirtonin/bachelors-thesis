@@ -115,11 +115,11 @@ class SearchFolder(Frame):
             # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/901_AXI FLIP 2/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/3001_AXI FLIP 2/DICOM'
             else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/1001_AXI FLIP 10/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/3101_AXI FLIP 10/DICOM'
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
             self.dcm_folder.append(self.dirname) # Saves the folder path with dcm files to a list
@@ -457,9 +457,11 @@ class Plot():
             # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
             self.average[i] = np.average(croped_pixel_array)
 
-        print(self.average)
-        print(self.average[1]/self.average[0])
+        # print(self.average)
+        # print(self.average[1]/self.average[0])
         self.echoes = np.array(np.unique(self.slice_and_echo[:,1]))
+        self.average_by_sin = np.divide(self.average,np.sin(self.echoes*np.pi/180))
+        self.average_by_tan = np.divide(self.average,np.tan(self.echoes*np.pi/180))
         self.create_plot()
 
 
@@ -476,8 +478,10 @@ class Plot():
     def model_equation(self,a,TE,TR,T1,T2,x): # x is the flip angle
         #This is the equation to be fitted. If you change input parameters, remember to also change them when this method is called
         E1 = np.exp(-TR/T1)
-        # return a*np.sin(x)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(x))
-        return a*x/(1+0.5*E1*x**2/(1-E1)) #approximation for flip angle << Ernst angle
+        b = a*np.exp(-TE/T2)*(1-E1)
+        # return a*np.sin(x*np.pi/180)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(x*np.pi/180))
+        # return a*x/(1+0.5*E1*x**2/(1-E1))                 #approximation for flip angle << Ernst angle
+        return E1*x+b
 
     def create_plot(self):
 
@@ -487,14 +491,14 @@ class Plot():
             self.plot_figure = Figure(figsize=(10, 10), dpi=100)
             self.the_plot = self.plot_figure.add_subplot(111)
 
-        self.the_plot.plot(self.echoes,self.average,'ro')
+        self.the_plot.plot(self.average_by_tan,self.average_by_sin,'ro')
         self.the_plot.get_yaxis().set_major_formatter(plt.LogFormatter(10, labelOnlyBase=False))
 
         params = Parameters()
-        params.add('amplitude', value=1000,min=50) #value is the initial value for fitting
-        params.add('T1', value = 5,min=0.2)
+        params.add('amplitude', value=100) #value is the initial value for fitting
+        params.add('T1', value = 0.1)
 
-        fitting = minimize(self.residual, params, args=(self.echoes, self.average))
+        fitting = minimize(self.residual, params, args=(self.average_by_tan, self.average_by_sin))
 
         self.fitted_amplitude = fitting.params['amplitude'].value
         self.fitted_T1 = fitting.params['T1'].value
@@ -502,19 +506,24 @@ class Plot():
 
 
         E1 = np.exp(-self.TR/self.fitted_T1)
+        b = self.fitted_amplitude*np.exp(-self.TE/self.T2)*(1-E1)
+        print('b = {0:.2e}'.format(b))
         # print('amplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
         # print('T1 fitted = {0:.2e}'.format(self.fitted_T1))
         # print('TR = {0:.2e}'.format(self.TR))
         #
-        # print('E1 = {0:.2e}'.format(E1))
+        print('E1 = {0:.2e}'.format(E1))
         # print('denominador = {0:.2e}'.format(0.5*E1/(1-E1)))
 
 
         if fitting.success: self.save_fit_params() # if fitting is succesfull, save the parrameters
 
-        self.fit_x_points = np.linspace(self.echoes[0],10*self.echoes[-1],1000)
+        self.fit_x_points = np.linspace(self.average_by_tan[0],self.average_by_tan[-1],1000)
+        # self.fit_x_points = np.linspace(0,self.average_by_tan[-1],1000)
 
         self.fitted_plot = self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,self.fit_x_points)
+        # print(self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,0))
+
 
         self.the_plot.plot(self.fit_x_points,self.fitted_plot)
 
@@ -556,7 +565,7 @@ class Plot():
             for child in self.right_frame2.winfo_children():  # destroys all widgets inside of self.right_frame2
                 child.destroy()
 
-        t = SimpleTable(self.right_frame2, len(self.slices_list)+1 ,3)
+        t = SimpleTable(self.right_frame2, len(self.slices_list)+1,3)
         t.pack(side="top", fill="x")
         t.set(0,0,"Slice");         t.set(0,1,"Amplitude");         t.set(0,2,"T1")
 
