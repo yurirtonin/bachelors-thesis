@@ -115,11 +115,11 @@ class SearchFolder(Frame):
             # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/3001_AXI FLIP 2/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2001_AXI FLIP 2/DICOM'
             else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/3101_AXI FLIP 10/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2101_AXI FLIP 10/DICOM'
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
             self.dcm_folder.append(self.dirname) # Saves the folder path with dcm files to a list
@@ -464,6 +464,16 @@ class Plot():
         self.average_by_tan = np.divide(self.average,np.tan(self.echoes*np.pi/180))
         self.create_plot()
 
+        print(self.average)
+        print(self.echoes)
+        print(np.sin(self.echoes*np.pi/180))
+        print(np.tan(self.echoes*np.pi/180))
+        print(self.average_by_sin)
+        print(self.average_by_tan)
+
+        a=(self.average_by_sin[1] - self.average_by_sin[0]) / (self.average_by_tan[1] - self.average_by_tan[0])
+        print('Coef angular = {0:.7f}'.format(a))
+        print('T1 = {0:.5e}'.format(-self.TR/np.log(a)))
 
     def residual(self,params, x, data):
         # Parameters to be fitted must be declared below
@@ -478,7 +488,7 @@ class Plot():
     def model_equation(self,a,TE,TR,T1,T2,x): # x is the flip angle
         #This is the equation to be fitted. If you change input parameters, remember to also change them when this method is called
         E1 = np.exp(-TR/T1)
-        b = a*np.exp(-TE/T2)*(1-E1)
+        b = a*(1-E1)#*np.exp(-TE/T2)
         # return a*np.sin(x*np.pi/180)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(x*np.pi/180))
         # return a*x/(1+0.5*E1*x**2/(1-E1))                 #approximation for flip angle << Ernst angle
         return E1*x+b
@@ -491,12 +501,14 @@ class Plot():
             self.plot_figure = Figure(figsize=(10, 10), dpi=100)
             self.the_plot = self.plot_figure.add_subplot(111)
 
+
+
         self.the_plot.plot(self.average_by_tan,self.average_by_sin,'ro')
         self.the_plot.get_yaxis().set_major_formatter(plt.LogFormatter(10, labelOnlyBase=False))
 
         params = Parameters()
         params.add('amplitude', value=100) #value is the initial value for fitting
-        params.add('T1', value = 0.1)
+        params.add('T1', value = 0.5)
 
         fitting = minimize(self.residual, params, args=(self.average_by_tan, self.average_by_sin))
 
@@ -509,11 +521,9 @@ class Plot():
         b = self.fitted_amplitude*np.exp(-self.TE/self.T2)*(1-E1)
         print('b = {0:.2e}'.format(b))
         # print('amplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
-        # print('T1 fitted = {0:.2e}'.format(self.fitted_T1))
+        print('T1 fitted = {0:.2e}'.format(self.fitted_T1))
         # print('TR = {0:.2e}'.format(self.TR))
-        #
         print('E1 = {0:.2e}'.format(E1))
-        # print('denominador = {0:.2e}'.format(0.5*E1/(1-E1)))
 
 
         if fitting.success: self.save_fit_params() # if fitting is succesfull, save the parrameters
@@ -528,8 +538,8 @@ class Plot():
         self.the_plot.plot(self.fit_x_points,self.fitted_plot)
 
         # self.the_plot.set_title('ROI average X Echo Time')
-        self.the_plot.set_xlabel('Ângulo de Flip')
-        self.the_plot.set_ylabel('Média da ROI')
+        self.the_plot.set_xlabel('Média/tangente')
+        self.the_plot.set_ylabel('Média/seno')
 
         if self.first_plot == False:
             self.canvas.draw()
