@@ -15,7 +15,7 @@ class main():
     def __init__(self):
         
         #rho0 = 8.14
-        a = 89
+        a = 20
         self.n_points = 1000
         self.theta = np.linspace(1,a,self.n_points)
         self.sin_theta = np.sin(self.theta*np.pi/180)
@@ -45,31 +45,32 @@ class main():
     def calculations(self):
             
         delta = 100
-        for i in range(100,100+delta,delta):
+        for i in range(700,700+delta,delta):
             T1 = i*10**-3
-         
+            
+            print('\n===== // ===== // ===== // ===== // ===== // =====')
+            print('\nT1 = {0:.2e}'.format(T1))
             print('TR = {0:.2e}'.format(self.TR))
-            print('T1 = {0:.2e}'.format(T1))
         
             E1 = np.exp(-self.TR/T1)
             
             thetaErnst = np.arccos(E1)*180/np.pi
-            print('thetaErnst = {0:.2f}'.format(thetaErnst))
-            
+            print('Ernst_angle = {0:.2f}'.format(thetaErnst))
             
             ampIdeal = 3 / (np.sin(2*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(2*np.pi/180))) 
             rho0 = ampIdeal
                 
             rho = rho0 * np.sin(self.theta*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(self.theta*np.pi/180)) 
             #    rhoapp = rho0 * theta / (1+0.5*E1*theta**2/(1-E1))
+
+            maximum = np.amax(rho)
+            coef = 0.01
+            noise = coef*maximum*np.random.random_sample(self.n_points)
+            rho = rho + noise
+            print('\nNoise is {0:.5f}% of the maximum of the function'.format(coef*100))
+                    
             rho_sin = rho / self.sin_theta
             rho_tan = rho / self.tan_theta
-            maximum = np.amax(rho)
-            noise = 0.1*maximum*np.random.random_sample(self.n_points)
-            rho = rho + noise
-                    
-            print(len(rho_tan))
-            print(rho_tan)
             
 #    Linearization Y = alpha*X + beta for theta = 2 and 10 degrees
             Y = np.empty(2)
@@ -79,30 +80,39 @@ class main():
             Y[1] = rho[11]/self.sin_theta[11]
             X[0] = rho[3]/self.tan_theta[3]
             X[1] = rho[11]/self.tan_theta[11]
-               
+                         
+            coef_angular = (Y[1]-Y[0])/(X[1]-X[0])
+            print('\nHand angular coef = {0:.6e}'.format(coef_angular))
+            T1_hand = - self.TR/np.log(coef_angular)
+            
             params = Parameters()
             params.add('amplitude', value=100) #value is the initial value for fitting
-            params.add('T1', value = 0.5)
+            params.add('T1', value = 0.05)
         
             fitting = minimize(self.residual, params, args=(X, Y))
-            if fitting.success: print('Fitting was successful')
+            if fitting.success: 
+                print('\nFitting was successful:')
             
-            self.fitted_amplitude = fitting.params['amplitude'].value
-            self.fitted_T1 = fitting.params['T1'].value
-            print('Fitted Amplitude = {0:.2e}'.format(self.fitted_amplitude))
-            print('Fitted T1 = {0:.2e}'.format(self.fitted_T1))
-            
-            self.fitted_plot = self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,rho_tan)
-           
-            plt.figure(0)
-            graph = plt.plot(self.theta,rho)#,'bo')
-            #graph = plt.plot(theta,rhoapp,'ro')
-            plt.show()
+                self.fitted_amplitude = fitting.params['amplitude'].value
+                self.fitted_T1 = fitting.params['T1'].value
+                print('    Fitted Amplitude = {0:.2e}'.format(self.fitted_amplitude))
+                print('    Fitted T1        = {0:.2e}'.format(self.fitted_T1))
+                print('    Hand T1          = {0:.2e}'.format(T1_hand))
 
-            plt.figure(1)
-            graph1 = plt.plot(rho_tan,self.fitted_plot)
-            graph1 = plt.plot(X,Y,'ro')
-            plt.show()
+                
+                difference = np.abs(self.fitted_T1 - T1)/T1
+                print('    Difference between fitted and simulated T1 is {0:.0f}%'.format(difference*100))
+                
+                self.fitted_plot = self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,rho_tan)
+               
+                plt.figure(0)
+                graph = plt.plot(self.theta,rho)#,'bo')
+#                graph = plt.plot(theta,rhoapp,'ro')
+#    
+                plt.figure(1)
+                graph1 = plt.plot(rho_tan,self.fitted_plot)
+                graph1 = plt.plot(X,Y,'ro')
+#                plt.show()
 
 
 a = main()
