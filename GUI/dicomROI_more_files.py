@@ -1,6 +1,3 @@
-
-
-
 import matplotlib  # these 3 lines need to exist in this way, otherwise matplotlib crashes with tkinter
 matplotlib.use("TkAgg") #backend of matplotlib
 
@@ -445,10 +442,13 @@ class Plot():
         self.slice_scale_value = slice_scale_value
 
         self.average = np.empty(len(self.dcm_all_echoes))
+        self.stdev   = np.empty(len(self.dcm_all_echoes))
 
         for i in range(len(self.dcm_all_echoes)):
 
             #Calculates the average of the ROI for each echo_time/flip_angle with that slice number
+
+            print(np.shape(self.dcm_all_echoes[i])) # size (224,224) < (300,300)
 
             dcm_image = Image.fromarray(self.dcm_all_echoes[i]).resize((300, 300)) #CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AND THE
                                                                                    #AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
@@ -456,6 +456,7 @@ class Plot():
             croped_pixel_array = np.array(croped_dcm_image)
             # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
             self.average[i] = np.average(croped_pixel_array)
+            self.stdev[i]   = np.std(croped_pixel_array)
 
         # print(self.average)
         # print(self.average[1]/self.average[0])
@@ -464,12 +465,18 @@ class Plot():
         self.average_by_tan = np.divide(self.average,np.tan(self.echoes*np.pi/180))
         self.create_plot()
 
-        print(self.average)
-        print(self.echoes)
-        print(np.sin(self.echoes*np.pi/180))
-        print(np.tan(self.echoes*np.pi/180))
-        print(self.average_by_sin)
-        print(self.average_by_tan)
+
+        # print(self.average)
+        # print(self.echoes)
+        # print(np.sin(self.echoes*np.pi/180))
+        # print(np.tan(self.echoes*np.pi/180))
+        # print(self.average_by_sin)
+        # print(self.average_by_tan)
+
+        print('Average @ 2 degrees = {0:.2e}'.format(self.average[0]))
+        print('StDev   @ 2 degrees = {0:.2e}'.format(self.stdev[0]))
+        self.SNR = self.average[0]/self.stdev[0]
+        print('SNR = {0:.2e}'.format(self.SNR))
 
         a=(self.average_by_sin[1] - self.average_by_sin[0]) / (self.average_by_tan[1] - self.average_by_tan[0])
         print('Coef angular = {0:.7f}'.format(a))
@@ -664,3 +671,5 @@ if __name__ == '__main__':
 #Possible improvements to the code:
 #   1 - Many variables imported from the DICOM header have a constant value for all images, but they are being imported
 #       as arrays. Change them to a single value may save computational time.
+#   2 - Make irregular ROI instead of a rectangular one
+#   3 - Increase image size Canvas without rescaling number of pixels, instead only zooming (which will result in poorer resolution)
