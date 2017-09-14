@@ -443,6 +443,8 @@ class Plot():
 
         self.average = np.empty(len(self.dcm_all_echoes))
         self.stdev   = np.empty(len(self.dcm_all_echoes))
+        self.maximo   = np.empty(len(self.dcm_all_echoes))
+
 
         for i in range(len(self.dcm_all_echoes)):
 
@@ -454,9 +456,13 @@ class Plot():
                                                                                    #AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
             croped_dcm_image = dcm_image.crop(coordinates)
             croped_pixel_array = np.array(croped_dcm_image)
-            # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
+            croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
+
+            self.maximo[i] = np.max(croped_pixel_array)
+
             self.average[i] = np.average(croped_pixel_array)
             self.stdev[i]   = np.std(croped_pixel_array)
+
 
         # print(self.average)
         # print(self.average[1]/self.average[0])
@@ -476,7 +482,10 @@ class Plot():
         print('Average @ 2 degrees = {0:.2e}'.format(self.average[0]))
         print('StDev   @ 2 degrees = {0:.2e}'.format(self.stdev[0]))
         self.SNR = self.average[0]/self.stdev[0]
-        print('SNR = {0:.2e}'.format(self.SNR))
+        print('SNR = {0:.2f}'.format(self.SNR))
+
+        print('max - media = {0:.2e}'.format(self.maximo[0]-self.average[0]))
+        print('SNR2 = {0:.2f}'.format(self.average[0]/(self.maximo[0]-self.average[0])))
 
         a=(self.average_by_sin[1] - self.average_by_sin[0]) / (self.average_by_tan[1] - self.average_by_tan[0])
         print('Coef angular = {0:.7f}'.format(a))
