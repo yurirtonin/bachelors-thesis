@@ -34,7 +34,7 @@ class main():
         self.T2 = 72*10**-3
         #self.T1 = 678*10**-3
     
-        print(self.TR/0.7)
+#        print(self.TR/0.7)
     
     def residual(self,params, x, data):
         # Parameters to be fitted must be declared below
@@ -59,10 +59,14 @@ class main():
         delta = 100
 #        for i in range(700,700+delta,delta):
         
+        X0_array = np.empty(0)
+        X1_array = np.empty(0)
+        Y0_array = np.empty(0)
+        Y1_array = np.empty(0)
+    
         for j in range(4,35): #vary SNR
             for i in range(1,30): #multiple runs with same T1
-                i = 700
-                T1 = i*10**-3
+                T1 = 700*10**-3
                 
 #                print('\n===== // ===== // ===== // ===== // ===== // =====')
 #                print('\nT1 = {0:.2e}'.format(T1))
@@ -120,6 +124,12 @@ class main():
                 Y[1] = rho[self.index_10deg]/self.sin_theta[self.index_10deg]
                 X[0] = rho[self.index_2deg]/self.tan_theta[self.index_2deg]
                 X[1] = rho[self.index_10deg]/self.tan_theta[self.index_10deg]
+                                
+#                print('----')
+#                print(Y[0])
+#                print(Y[1])
+#                print('----')
+
                 
 #                Y[2] = rho[self.index2]/self.sin_theta[self.index2]
 #                X[2] = rho[self.index2]/self.tan_theta[self.index2] 
@@ -127,10 +137,14 @@ class main():
 #                X[3] = rho[self.index3]/self.tan_theta[self.index3] 
 #                Y[4] = rho[self.index4]/self.sin_theta[self.index4]
 #                X[4] = rho[self.index4]/self.tan_theta[self.index4]  
-               
+
+                X0_array = np.append(X0_array,X[0])
+                X1_array = np.append(X1_array,X[1])
+                Y0_array = np.append(Y0_array,Y[0])
+                Y1_array = np.append(Y1_array,Y[1])
   
-                coef_angular = (Y[1]-Y[0])/(X[1]-X[0])
-#                print('\nHand angular coef = {0:.6e}'.format(coef_angular))
+                coef_angular = (Y[0]-Y[1])/(X[0]-X[1])
+                print('\nHand angular coef = {0:.6e}'.format(coef_angular))
                 T1_hand = - self.TR/np.log(coef_angular)
                 
                 params = Parameters()
@@ -141,11 +155,12 @@ class main():
                 if fitting.success: 
 #                    print('\nFitting was successful:')
                 
+
                     self.fitted_amplitude = fitting.params['amplitude'].value
                     self.fitted_T1 = fitting.params['T1'].value
 #                    print('    Fitted Amplitude = {0:.2e}'.format(self.fitted_amplitude))
-#                    print('    Fitted T1        = {0:.2e}'.format(self.fitted_T1))
-#                    print('    Hand T1          = {0:.2e}'.format(T1_hand))
+                    print('    Fitted T1        = {0:.2e}'.format(self.fitted_T1))
+                    print('    Hand T1          = {0:.2e}'.format(T1_hand))
     
                     
                     difference = np.abs(self.fitted_T1 - T1)/T1
@@ -173,6 +188,35 @@ class main():
                     plt.ylabel('(T1_fit - T1)*100/T1')
                     plt.title('Angle1 = {0:.2f}     Angle2 = {1:.2f}'.format(self.theta[self.index_2deg],self.theta[self.index_10deg]))
 
+
+
+        X0_average = np.average(X0_array)
+        X1_average = np.average(X1_array)
+        Y0_min     = np.min(Y0_array)
+        Y0_max     = np.max(Y0_array)
+        Y1_min     = np.min(Y1_array)
+        Y1_max     = np.max(Y1_array)
+        
+        print('----')
+        print(X0_average)
+        print(X1_average)
+        print(Y0_min)
+        print(Y0_max)
+        print(Y1_min)
+        print(Y1_max)
+        print('----')
+        
+        angular_min = (Y0_min-Y1_max)/(X0_average-X1_average)
+        angular_max = (Y0_max-Y1_min)/(X0_average-X1_average)
+
+        T1_min = - self.TR/np.log(angular_min)
+        T1_max = - self.TR/np.log(angular_max)
+
+        print('Coef angular minimo = {0:.2f}'.format(angular_min))
+        print('Coef angular max    = {0:.2f}'.format(angular_max))
+
+        print(T1_min)
+        print(T1_max)
 
 a = main()
 a.calculations()
