@@ -81,6 +81,7 @@ class main():
                 rho0 = ampIdeal
                     
                 rho = rho0 * np.sin(self.theta*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(self.theta*np.pi/180)) 
+                rhononoise = rho
                 #    rhoapp = rho0 * theta / (1+0.5*E1*theta**2/(1-E1))
     
     #            maximum = np.amax(rho)
@@ -101,6 +102,7 @@ class main():
                 SNR = j
                 SNR_list.append(SNR)
                 StDev = rho[self.index_2deg]/SNR
+#                noise = -1/2 + StDev*(1/2-(-1/2))*np.random.random_sample(self.n_points)*1
                 noise = StDev*np.random.random_sample(self.n_points)*1
                 rho = rho + noise 
 #                print('\nNoise is at most the Standard Deviation = {0:.5f}'.format(StDev))
@@ -117,8 +119,20 @@ class main():
                 
                 
     #    Linearization Y = alpha*X + beta for theta = 2 and 10 degrees
-                Y = np.empty(2)
-                X = np.empty(2)
+                k=2
+                Y = np.empty(k)
+                X = np.empty(k)
+            
+                Ynonoise= np.empty(k)
+                Xnonoise= np.empty(k)
+                
+                Ynonoise[0] = rhononoise[self.index_2deg]/self.sin_theta[self.index_2deg]
+                Ynonoise[1] = rhononoise[self.index_10deg]/self.sin_theta[self.index_10deg]
+                Xnonoise[0] = rhononoise[self.index_2deg]/self.tan_theta[self.index_2deg]
+                Xnonoise[1] = rhononoise[self.index_10deg]/self.tan_theta[self.index_10deg]
+                
+#                Xnonoise[2] = rhononoise[self.index2]/self.tan_theta[self.index2]
+#                Ynonoise[2] = rhononoise[self.index2]/self.sin_theta[self.index2]
             
                 Y[0] = rho[self.index_2deg]/self.sin_theta[self.index_2deg]
                 Y[1] = rho[self.index_10deg]/self.sin_theta[self.index_10deg]
@@ -178,17 +192,28 @@ class main():
                     plt.figure(1)
 #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
                     graph1 = plt.plot(X,Y,'o')
-                    plt.xlabel('Signal/tan')
-                    plt.ylabel('Signal/sin')
-    #                plt.show()
+                    graph1 = plt.plot(Xnonoise,Ynonoise,'k*',markersize=15)
+                    graph1 = plt.gcf()
+                    plt.xlabel(r'$\frac{S}{tan(\theta)}$',fontsize=20)
+                    labelY = plt.ylabel(r'$\frac{S}{sin(\theta)}$',fontsize=20,labelpad=25)          
+                    labelY.set_rotation(0)
+                    plt.tight_layout()
     
+#                    print(SNR_list)
                     plt.figure(2)
                     graph2 = plt.plot(SNR_list,difference_list,'ro')
-                    plt.xlabel('SNR')
-                    plt.ylabel('(T1_fit - T1)*100/T1')
-                    plt.title('Angle1 = {0:.2f}     Angle2 = {1:.2f}'.format(self.theta[self.index_2deg],self.theta[self.index_10deg]))
+                    graph2 = plt.plot(SNR_list,np.full((np.size(SNR_list)),100),'k--')
+                    graph2 = plt.plot(SNR_list,np.full((np.size(SNR_list)),50),'g--')
+#                    plt.axvline(x=15)
+                    graph2 = plt.gcf()                                   
+                    plt.xlabel('SNR',fontsize=12)
+                    plt.ylabel('Variação % de $T_1$ com ruído',fontsize=12)#'(T1_fit - T1)*100/T1')
+                    plt.title(r'$\theta_1 = {0:.0f}^o$     $\theta_2 = {1:.0f}^o$'.format(self.theta[self.index_2deg],self.theta[self.index_10deg]),fontsize=12)
+#                    plt.title(r'$\theta_1 = {0:.0f}^o$     $\theta_2 = {1:.0f}^o$     $\theta_3 = {2:.0f}^o$'.format(self.theta[self.index_2deg],self.theta[self.index2],self.theta[self.index_10deg]),fontsize=12)
+#                    plt.savefig('SNR.png')
 
-
+        graph1.savefig('linear.png')
+        graph2.savefig('SNR.png')
 
         X0_average = np.average(X0_array)
         X1_average = np.average(X1_array)
@@ -206,17 +231,17 @@ class main():
         print(Y1_max)
         print('----')
         
-        angular_min = (Y0_min-Y1_max)/(X0_average-X1_average)
-        angular_max = (Y0_max-Y1_min)/(X0_average-X1_average)
+#        angular_min = (Y0_min-Y1_max)/(X0_average-X1_average)
+#        angular_max = (Y0_max-Y1_min)/(X0_average-X1_average)
 
-        T1_min = - self.TR/np.log(angular_min)
-        T1_max = - self.TR/np.log(angular_max)
+#        T1_min = - self.TR/np.log(angular_min)
+#        T1_max = - self.TR/np.log(angular_max)
 
-        print('Coef angular minimo = {0:.2f}'.format(angular_min))
-        print('Coef angular max    = {0:.2f}'.format(angular_max))
+#        print('Coef angular minimo = {0:.2f}'.format(angular_min))
+#        print('Coef angular max    = {0:.2f}'.format(angular_max))
 
-        print(T1_min)
-        print(T1_max)
+#        print(T1_min)
+#        print(T1_max)
 
 a = main()
 a.calculations()
