@@ -95,6 +95,7 @@ class SearchFolder(Frame):
         self.FOVy              = []
         self.gradient_echo_train_length = []
         self.slice_and_echo    = np.array([],dtype=np.int64).reshape(0,2)
+        self.acquisition_time = []
 
 
         for j in range(0,np.int(self.acquisition_number.get())):
@@ -133,6 +134,8 @@ class SearchFolder(Frame):
             self.rescale_slope.append(np.zeros(len(self.dcm_files[j])))
             self.rescale_intercept.append( np.zeros(len(self.dcm_files[j])))
             self.flip_angle.append( np.zeros(len(self.dcm_files[j])))
+            self.acquisition_time.append( np.zeros(len(self.dcm_files[j])))
+
 
             # Read parameters from all files and store them in their respective arrays
             for i in range(len(self.dcm_files[j])):
@@ -161,7 +164,7 @@ class SearchFolder(Frame):
                 self.columns       = dcm_read[0x28, 0x11].value
                 self.pixel_spacing = dcm_read[0x28, 0x30].value
 
-
+                self.acquisition_time[j][i] = dcm_read[0x8, 0x32].value
 
             self.slice_and_flip.append(np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
 
@@ -178,6 +181,7 @@ class SearchFolder(Frame):
 
         # print(dcm_read.dir())  # All Dicom tag available
 
+        print('Acquisition time = {0:.0f}'.format(self.acquisition_time[0][1]))
         print('Echo Train Length = {0:.0f}'.format(self.gradient_echo_train_length[0][0]))
         self.total_repetition_time = np.multiply(self.repetition_time,self.gradient_echo_train_length)
         # self.total_repetition_time = np.multiply(self.repetition_time,1)
