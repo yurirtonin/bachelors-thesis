@@ -15,13 +15,14 @@ M0 = 100 # initial magnetzation
    
 T1 = 700*10**-3 # longitudinal relaxation time
 
-b = 90
+b = 1
 TR_array = np.empty(b)
 image_matrix = []
 for i in range(0,b):
     
     dT = 2*10**-3
     TR = (162*10**-3 -(b/2)*dT) + i*dT # repetition time in seconds
+    TR= 162*10**-3
     # print(TR)
     # TR = 162*10**-3
     TR_array[i] = TR
@@ -29,7 +30,7 @@ for i in range(0,b):
     E1 = np.exp(-TR/T1)
     
     thetaErnst = int(np.floor(np.arccos(E1)*180/np.pi))
-#    print('theta_Ernst = {0:d}'.format(thetaErnst))
+    print('theta_Ernst = {0:d}'.format(thetaErnst))
     thetaErnst = 90
         
 #    if i == 0: image_matrix = np.empty((0,thetaErnst))
@@ -75,7 +76,7 @@ for i in range(0,b):
                 Mz_stable = Mz_array[n]
                 break
             
-    #    print('Estabilidade atingida após {0:d} pulsos.'.format(n+1))
+        print('Estabilidade atingida após {0:d} pulsos.'.format(n+1))
         
         images_number = (total_time - TR*n_stable) / TR
         images_array[a] = images_number
@@ -105,6 +106,7 @@ fig = plt.figure()
 ax = fig.gca(projection='3d')
 theta_array, TR_array = np.meshgrid(theta_array, TR_array)
 surf = ax.plot_surface(TR_array, theta_array, image_matrix, cmap=cm.coolwarm,linewidth=0, antialiased=False)
+fig.colorbar(surf, shrink=0.5, aspect=5)
 plt.show()
 
 # s = mlab.surf(image_matrix,warp_scale='auto')
