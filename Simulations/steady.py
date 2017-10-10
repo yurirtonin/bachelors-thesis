@@ -59,7 +59,7 @@ for theta in range(1,thetaErnst):
     
     print('Tempo total para aquisição: Ttotal = {0:.2f} segundos'.format(total_time))
     
-    if total_time >= Texame: print('Ângulo = {0:.0f} graus requer Texame > {1:f}'.format(theta,Texame))
+#    if total_time >= Texame: print('Ângulo = {0:.0f} graus requer Texame > {1:f}'.format(theta,Texame))
     
     print('=== # === # === # === # === # === # === # === # === # ')
 

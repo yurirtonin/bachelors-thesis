@@ -13,7 +13,9 @@ from matplotlib import cm
 
 M0 = 100 # initial magnetzation
    
-T1 = 700*10**-3 # longitudinal relaxation time
+T1 = 613.9*10**-3 # longitudinal relaxation time
+# T1 = 200.3*10**-3 # longitudinal relaxation time
+
 
 b = 1
 TR_array = np.empty(b)
@@ -22,7 +24,7 @@ for i in range(0,b):
     
     dT = 2*10**-3
     TR = (162*10**-3 -(b/2)*dT) + i*dT # repetition time in seconds
-    TR= 162*10**-3
+    # TR= 162*10**-3
     # print(TR)
     # TR = 162*10**-3
     TR_array[i] = TR
@@ -31,7 +33,7 @@ for i in range(0,b):
     
     thetaErnst = int(np.floor(np.arccos(E1)*180/np.pi))
     print('theta_Ernst = {0:d}'.format(thetaErnst))
-    thetaErnst = 90
+    thetaErnst = 30
         
 #    if i == 0: image_matrix = np.empty((0,thetaErnst))
     
@@ -61,7 +63,7 @@ for i in range(0,b):
             Mz_array[n] = Mz
             n_array[n]  = n
         
-        plt.figure(0)    
+        plt.figure(0)
         plt.plot(n_array,Mz_array)
         
         distance_between_elements = 100
@@ -71,7 +73,7 @@ for i in range(0,b):
             difference = np.abs(Mz_array[n]-Mz_array[n+distance_between_elements])/Mz_array[n]
     #        print(difference)
             
-            if difference < 0.0001:
+            if difference < 10**-10:
                 n_stable = n
                 Mz_stable = Mz_array[n]
                 break
@@ -108,7 +110,3 @@ theta_array, TR_array = np.meshgrid(theta_array, TR_array)
 surf = ax.plot_surface(TR_array, theta_array, image_matrix, cmap=cm.coolwarm,linewidth=0, antialiased=False)
 fig.colorbar(surf, shrink=0.5, aspect=5)
 plt.show()
-
-# s = mlab.surf(image_matrix,warp_scale='auto')
-# s = mlab.surf(theta_array,TR_array,image_matrix)
-# mlab.show()
