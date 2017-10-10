@@ -63,7 +63,7 @@ class main():
         Y0_array = np.empty(0)
         Y1_array = np.empty(0)
 
-        for a in range(0,1):  
+        for a in range(0,2):  
             if a == 0: 
                 T1 = 613.9*10**-3 # pre contrast 
             else:
@@ -71,8 +71,8 @@ class main():
             
 #                Besa values: T1 = 613.9 ms (pre) and T1 = 200.3 ms (post)
 
-            for j in range(4,30): #vary SNR
-                for i in range(1,30): #multiple runs with same T1
+            for j in range(5,40): #vary SNR
+                for i in range(1,40): #multiple runs with same T1
 #                        T1 = 700*10**-3
                     
     #                print('\n===== // ===== // ===== // ===== // ===== // =====')
@@ -88,21 +88,27 @@ class main():
                     rho0 = ampIdeal
                     rho0 = 1
                     
+                    T12 = 1000*10**-3
+                    E12 = np.exp(-self.TR/T12)
+                    rho2 = rho0 * np.sin(self.theta*np.pi/180)*(1-E12)*np.exp(-self.TE/self.T2)/(1-E12*np.cos(self.theta*np.pi/180))
+
+                    
                     rho = rho0 * np.sin(self.theta*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(self.theta*np.pi/180))
                     rho_nonoise = rho
 #                   rhoapp = rho0 * theta / (1+0.5*E1*theta**2/(1-E1))
         
+##   Find best angles according to Deoni 2003:
                     maximum = np.amax(rho)
                     rho_at_best_angles = 0.71*maximum
-                    find_rho = rho
-                    best_angle = (np.abs(find_rho-rho_at_best_angles)).argmin()
-                    find_rho = np.delete(find_rho,best_angle)
-                    for i in range(1,10): 
-                        find_rho = np.delete(find_rho,best_angle+i)
-                        find_rho = np.delete(find_rho,best_angle-i)
-                    best_angle2 = (np.abs(find_rho-rho_at_best_angles)).argmin()
-                    print(best_angle)
-                    print(best_angle2)
+#                    find_rho = rho
+#                    best_angle = (np.abs(find_rho-rho_at_best_angles)).argmin()
+#                    find_rho = np.delete(find_rho,best_angle)
+#                    for i in range(1,10): 
+#                        find_rho = np.delete(find_rho,best_angle+i)
+#                        find_rho = np.delete(find_rho,best_angle-i)
+#                    best_angle2 = (np.abs(find_rho-rho_at_best_angles)).argmin()
+#                    print(best_angle)
+#                    print(best_angle2)
 
                     
                     SNR = j
@@ -165,14 +171,17 @@ class main():
 #                            self.fit_x_points = np.linspace(X[0],X[1],1000)
 #                            self.fitted_plot = self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,self.fit_x_points)
 #                           
-                        plt.figure(4)
-                        graph = plt.plot(self.theta,rho_nonoise,'o')#,label='Sinal',linewidth=3)
-#                        graph = plt.plot(self.theta,rho)#,label='Sinal com ruído 'r'$\sigma$',linewidth=2)
-#                        graph = plt.plot(theta,rhoapp,'ro')
-#                        plt.xlabel('Ângulo de flip 'r'$\theta$ [Graus]')
-#                        plt.ylabel('Sinal S')
+#                        plt.figure(4)
+#                        graph = plt.axhline(y=rho_at_best_angles, color='y', linestyle='-',label ='71\% of A maximum')
+##                        graph = plt.axvline(x=thetaErnst, color='blue', linestyle='-')
+#                        graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
+#                        graph = plt.plot(self.theta,rho_nonoise,label='Signal A',linewidth=3)
+#                        graph = plt.plot(self.theta,rho2,label='Signal B',linewidth=2)
+#    #                        graph = plt.plot(theta,rhoapp,'ro')
+#                        plt.xlabel('Flip angle 'r'$\theta$ [Degrees]')
+#                        plt.ylabel('Signal S')
 #                        plt.legend()
-#                        plt.savefig('signaltheta.png')
+#                        plt.savefig('signaltheta.png',dpi=600)
 #                            
 #                            plt.figure(5)
 #        #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
@@ -187,12 +196,14 @@ class main():
         
                         plt.figure(a)
                         plt.axvline(x=15, color='g', linestyle='-')
-                        plt.plot(SNR_list,difference_list,'ro')
+                        plt.plot(SNR_list,difference_list,'o',c='#ED8F19',markeredgecolor='black',markeredgewidth=0.5)
                         plt.xlabel('SNR',fontsize=16)
                         plt.ylabel(r'$\Delta \% T_1$',fontsize=16)
-                        plt.title(r'$\theta_1 = {0:.0f}  \quad   \theta_2 = {1:.0f}  \quad  T_1 = {2:.0f}$ ms'.format(self.theta[self.index0],self.theta[self.index1],T1*1000),fontsize=16)
-        
-            
+                        plt.title(r'$\theta_1 = {0:.0f} \quad   \theta_2 = {1:.0f}  \quad  T_1 = {2:.0f}$ ms'.format(self.theta[self.index0],self.theta[self.index1],T1*1000),fontsize=16)
+
+                        print('running')
+
+            plt.savefig('uncertainty.png',dpi=600)
 
 
 a = main()

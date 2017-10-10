@@ -11,33 +11,36 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 # from mayavi import mlab
 
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
+rc('text', usetex=True)
+
 M0 = 100 # initial magnetzation
    
 T1 = 613.9*10**-3 # longitudinal relaxation time
-# T1 = 200.3*10**-3 # longitudinal relaxation time
+#T1 = 200.3*10**-3 # longitudinal relaxation time
 
 
-b = 1
+b = 1 
 TR_array = np.empty(b)
 image_matrix = []
 for i in range(0,b):
     
     dT = 2*10**-3
-    TR = (162*10**-3 -(b/2)*dT) + i*dT # repetition time in seconds
-    # TR= 162*10**-3
+#    TR = (162*10**-3 -(b/2)*dT) + i*dT # repetition time in seconds
+    TR= 162*10**-3
     # print(TR)
-    # TR = 162*10**-3
     TR_array[i] = TR
     
     E1 = np.exp(-TR/T1)
     
     thetaErnst = int(np.floor(np.arccos(E1)*180/np.pi))
     print('theta_Ernst = {0:d}'.format(thetaErnst))
-    thetaErnst = 30
+    thetaErnst = 90
         
 #    if i == 0: image_matrix = np.empty((0,thetaErnst))
     
-    total_time = 25 #seconds
+    total_time = 20 #seconds
     
     images_array = np.empty(thetaErnst)
     theta_array = np.empty(thetaErnst)
@@ -63,22 +66,26 @@ for i in range(0,b):
             Mz_array[n] = Mz
             n_array[n]  = n
         
-        plt.figure(0)
-        plt.plot(n_array,Mz_array)
+#        plt.figure(0)
+#        plt.plot(n_array,Mz_array)
         
         distance_between_elements = 100
         
         for n in range(0,N-distance_between_elements):
             
             difference = np.abs(Mz_array[n]-Mz_array[n+distance_between_elements])/Mz_array[n]
-    #        print(difference)
+#            print('dif = {0:.8e}'.format(difference))
+        
+        for n in range(0,N-distance_between_elements):
             
-            if difference < 10**-10:
+            difference = np.abs(Mz_array[n]-Mz_array[n+distance_between_elements])/Mz_array[n]
+            if difference < 10**-8:
                 n_stable = n
                 Mz_stable = Mz_array[n]
+                print('nstable = {0:.0f}     dif = {1:.8e}'.format(n_stable,difference))
                 break
             
-        print('Estabilidade atingida após {0:d} pulsos.'.format(n+1))
+#        print('Estabilidade atingida após {0:d} pulsos.'.format(n+1))
         
         images_number = (total_time - TR*n_stable) / TR
         images_array[a] = images_number
@@ -92,9 +99,18 @@ for i in range(0,b):
         
     #    print('=== # === # === # === # === # === # === # === # === # ')
     
+
     
     plt.figure(1)
-    plt.plot(theta_array,images_array,'o')
+    plt.plot(theta_array,images_array,'ro',markeredgecolor='black',markeredgewidth=0.5)
+    plt.xlabel('Angle [Degrees]',fontsize=16)
+    plt.ylabel('Number of images',fontsize=16)
+    plt.xticks(np.arange(min(theta_array)-1, max(theta_array)+5, 5.0))
+#    plt.yticks(np.arange(100, 155, 10.0))
+    plt.grid(b=True,which='major',axis='both')    
+    plt.axes().set_aspect(1)
+    plt.savefig('images.png',dpi=600)
+
     
     image_matrix.append(images_array)
 
@@ -104,9 +120,9 @@ print(image_matrix.shape)
 print(theta_array.shape)
 print(TR_array.shape)
 
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-theta_array, TR_array = np.meshgrid(theta_array, TR_array)
-surf = ax.plot_surface(TR_array, theta_array, image_matrix, cmap=cm.coolwarm,linewidth=0, antialiased=False)
-fig.colorbar(surf, shrink=0.5, aspect=5)
-plt.show()
+#fig = plt.figure()
+#ax = fig.gca(projection='3d')
+#theta_array, TR_array = np.meshgrid(theta_array, TR_array)
+#surf = ax.plot_surface(TR_array, theta_array, image_matrix, cmap=cm.coolwarm,linewidth=0, antialiased=False)
+#fig.colorbar(surf, shrink=0.5, aspect=5)
+#plt.show()
