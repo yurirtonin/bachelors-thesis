@@ -40,7 +40,7 @@ for i in range(0,b):
         
 #    if i == 0: image_matrix = np.empty((0,thetaErnst))
     
-    total_time = 20 #seconds
+    total_time = 25 #seconds
     
     images_array = np.empty(thetaErnst)
     theta_array = np.empty(thetaErnst)
@@ -79,7 +79,7 @@ for i in range(0,b):
         for n in range(0,N-distance_between_elements):
             
             difference = np.abs(Mz_array[n]-Mz_array[n+distance_between_elements])/Mz_array[n]
-            if difference < 10**-8:
+            if difference < 10**-5:
                 n_stable = n
                 Mz_stable = Mz_array[n]
                 print('nstable = {0:.0f}     dif = {1:.8e}'.format(n_stable,difference))
@@ -87,7 +87,7 @@ for i in range(0,b):
             
 #        print('Estabilidade atingida após {0:d} pulsos.'.format(n+1))
         
-        images_number = (total_time - TR*n_stable) / TR
+        images_number = ((total_time - TR*n_stable) / TR)
         images_array[a] = images_number
         
     #    print('Número de imagens que podem ser adquiridas em até 25 segundos: {0:.0f}'.format(images_number))
@@ -107,6 +107,7 @@ for i in range(0,b):
     plt.ylabel('Number of images',fontsize=16)
     plt.xticks(np.arange(min(theta_array)-1, max(theta_array)+5, 5.0))
 #    plt.yticks(np.arange(100, 155, 10.0))
+    plt.title('Apnea time = {0:.0f} seconds'.format(total_time))
     plt.grid(b=True,which='major',axis='both')    
     plt.axes().set_aspect(1)
     plt.savefig('images.png',dpi=600)

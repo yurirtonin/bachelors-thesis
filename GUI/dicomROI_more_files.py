@@ -112,12 +112,12 @@ class SearchFolder(Frame):
             # the folder with the dicom files. If you want the interface to search the folder to appear when you click
             # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
-                # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2001_AXI FLIP 2/DICOM'
+                self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2001_AXI FLIP 2/DICOM'
             else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
-                # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2101_AXI FLIP 10/DICOM'
+                self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2101_AXI FLIP 10/DICOM'
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
             self.dcm_folder.append(self.dirname) # Saves the folder path with dcm files to a list
@@ -163,6 +163,7 @@ class SearchFolder(Frame):
                 self.rows          = dcm_read[0x28, 0x10].value
                 self.columns       = dcm_read[0x28, 0x11].value
                 self.pixel_spacing = dcm_read[0x28, 0x30].value
+                self.number_averages = dcm_read[0x18, 0x83].value
 
                 self.acquisition_time[j][i] = dcm_read[0x8, 0x32].value
 
@@ -187,6 +188,7 @@ class SearchFolder(Frame):
         # self.total_repetition_time = np.multiply(self.repetition_time,1)
         # print(self.total_repetition_time)
 
+        print('Number of averages = {0:.0f}'.format(self.number_averages))
 
         self.TR = self.total_repetition_time[0][0]*10**-3 # Values here work just like for echo time
         self.T1 = 678*10**-3                              # Value in seconds. T1 and T2 values are for 1.5 T
