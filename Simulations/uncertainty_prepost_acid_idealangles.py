@@ -22,8 +22,8 @@ class main():
         self.sin_theta = np.sin(self.theta*np.pi/180)
         self.tan_theta = np.tan(self.theta*np.pi/180)
 
-        self.index0      = 2
-        self.index1      = 10
+        self.index0      = 15
+        self.index1      = 80
         self.index2      = 4
         self.index3      = 11
         self.index4      = 14
