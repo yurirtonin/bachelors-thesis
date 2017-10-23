@@ -9,9 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from lmfit import minimize, Parameters # lmfit is the package for fitting
 
-from matplotlib import rc
-rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
-rc('text', usetex=True)
+#from matplotlib import rc
+#rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
+#rc('text', usetex=True)
 
 class main():
     
@@ -22,8 +22,10 @@ class main():
         self.sin_theta = np.sin(self.theta*np.pi/180)
         self.tan_theta = np.tan(self.theta*np.pi/180)
 
-        self.index0      = 1 # 1 indicates angle of 2 degrees. Ideal is 15
-        self.index1      = 9 # 9 indicates angle of 10 degrees. Ideal is 80
+#        self.index0      = 1 # 1 indicates angle of 2 degrees. Ideal is 15
+#        self.index1      = 9 # 9 indicates angle of 10 degrees. Ideal is 80
+        self.index0      = 15 # 1 indicates angle of 2 degrees. Ideal is 15
+        self.index1      = 80 # 9 indicates angle of 10 degrees. Ideal is 80
 
         train = 43
         self.TR = 3.78*10**-3*train
@@ -54,7 +56,7 @@ class main():
             
 #                Besa values: T1 = 613.9 ms (pre) and T1 = 200.3 ms (post)
 
-        for SNR in range(8,150): #vary SNR
+        for SNR in range(8,100): #vary SNR
 #            print('\nSNR = {0:.0f}'.format(SNR))
             for i in range(1,20): #multiple runs with same T1
                 
@@ -150,15 +152,17 @@ class main():
 
 #                print(global_list)                
     
-
+        plt.figure(1)
         for i in range(len(global_list)):
-            plt.figure(1)
             difference = np.abs(global_list[i][1] - global_list[i][2])*100/global_list[i][1]
-
+#
             if difference > 150: print(global_list[i][1],global_list[i][2])
-        
+#        
 #            print(difference)
+#            print(global_list[i][0])
             plt.plot(global_list[i][0],difference,'ro')
+            
+            
 #                        difference = np.abs(self.fitted_T1 - T1)/T1
 #                        difference_list.append(difference*100)
 #                        print('    Difference between fitted and simulated T1 is {0:.5f}%'.format(difference*100))
