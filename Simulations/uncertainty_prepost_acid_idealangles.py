@@ -9,9 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from lmfit import minimize, Parameters # lmfit is the package for fitting
 
-from matplotlib import rc
-rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
-rc('text', usetex=True)
+#from matplotlib import rc
+#rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
+#rc('text', usetex=True)
 
 class main():
     
@@ -114,7 +114,7 @@ class main():
                     SNR = j
                     SNR_list.append(SNR)
                     StDev = rho[self.index0]/SNR
-                    noise = StDev*np.random.random_sample(self.n_points)*1
+                    noise = np.random.normal(0,StDev,self.n_points)
                     rho = rho + noise 
     #                print('\nNoise is at most the Standard Deviation = {0:.5f}'.format(StDev))
                     
@@ -198,12 +198,12 @@ class main():
                         plt.axvline(x=15, color='g', linestyle='-')
                         plt.plot(SNR_list,difference_list,'o',c='#ED8F19',markeredgecolor='black',markeredgewidth=0.5)
                         plt.xlabel('SNR',fontsize=16)
-                        plt.ylabel(r'$\Delta \% T_1$',fontsize=16)
-                        plt.title(r'$\theta_1 = {0:.0f} \quad   \theta_2 = {1:.0f}  \quad  T_1 = {2:.0f}$ ms'.format(self.theta[self.index0],self.theta[self.index1],T1*1000),fontsize=16)
+#                        plt.ylabel(r'$\Delta \% T_1$',fontsize=16)
+#                        plt.title(r'$\theta_1 = {0:.0f} \quad   \theta_2 = {1:.0f}  \quad  T_1 = {2:.0f}$ ms'.format(self.theta[self.index0],self.theta[self.index1],T1*1000),fontsize=16)
 
-                        print('running')
+#                        print('running')
 
-            plt.savefig('uncertainty.png',dpi=600)
+#            plt.savefig('uncertainty.png',dpi=600)
 
 
 a = main()

@@ -22,10 +22,10 @@ class main():
         self.sin_theta = np.sin(self.theta*np.pi/180)
         self.tan_theta = np.tan(self.theta*np.pi/180)
 
-#        self.index0      = 1 # 1 indicates angle of 2 degrees. Ideal is 15
-#        self.index1      = 9 # 9 indicates angle of 10 degrees. Ideal is 80
-        self.index0      = 15 # 1 indicates angle of 2 degrees. Ideal is 15
-        self.index1      = 80 # 9 indicates angle of 10 degrees. Ideal is 80
+        self.index0      = 1 # 1 indicates angle of 2 degrees. Ideal is 15
+        self.index1      = 9 # 9 indicates angle of 10 degrees. Ideal is 80
+#        self.index0      = 15 # 1 indicates angle of 2 degrees. Ideal is 15
+#        self.index1      = 80 # 9 indicates angle of 10 degrees. Ideal is 80
 
         train = 43
         self.TR = 3.78*10**-3*train
@@ -90,7 +90,7 @@ class main():
                         
                     SNR_list.append(SNR)
                     StDev = rho[self.index0]/SNR
-                    noise = StDev*np.random.random_sample(self.n_points)*1
+                    noise = np.random.normal(0,StDev,self.n_points)
                     rho = rho + noise 
 #                    print('\nNoise is at most the Standard Deviation = {0:.5f}'.format(StDev))
                     

@@ -11,9 +11,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 # from mayavi import mlab
 
-from matplotlib import rc
-rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
-rc('text', usetex=True)
+#from matplotlib import rc
+#rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
+#rc('text', usetex=True)
 
 M0 = 100 # initial magnetzation
    
