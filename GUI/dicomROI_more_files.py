@@ -113,11 +113,15 @@ class SearchFolder(Frame):
             # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2001_AXI FLIP 2/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2001_AXI FLIP 2/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/901_AXI FLIP 2/DICOM'
+
             else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2101_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2101_AXI FLIP 10/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/1001_AXI FLIP 10/DICOM'
+
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
             self.dcm_folder.append(self.dirname) # Saves the folder path with dcm files to a list
@@ -182,7 +186,7 @@ class SearchFolder(Frame):
 
         # print(dcm_read.dir())  # All Dicom tag available
 
-        print('Acquisition time = {0:.0f}'.format(self.acquisition_time[0][1]))
+        # print('Acquisition time = {0:.0f}'.format(self.acquisition_time[0][1]))
         print('Echo Train Length = {0:.0f}'.format(self.gradient_echo_train_length[0][0]))
         self.total_repetition_time = np.multiply(self.repetition_time,self.gradient_echo_train_length)
         # self.total_repetition_time = np.multiply(self.repetition_time,1)
@@ -442,13 +446,13 @@ class Plot():
 
     def ROI_average(self,dcm_all_echoes,coordinates,echo_time_scale_value,slice_scale_value):
 
-        self.dcm_all_echoes = dcm_all_echoes
-        self.coordinates = coordinates
+        self.dcm_all_echoes        = dcm_all_echoes
+        self.coordinates           = coordinates
         self.echo_time_scale_value = echo_time_scale_value
-        self.slice_scale_value = slice_scale_value
+        self.slice_scale_value     = slice_scale_value
 
-        self.average = np.empty(len(self.dcm_all_echoes))
-        self.stdev   = np.empty(len(self.dcm_all_echoes))
+        self.average  = np.empty(len(self.dcm_all_echoes))
+        self.stdev    = np.empty(len(self.dcm_all_echoes))
         self.maximo   = np.empty(len(self.dcm_all_echoes))
 
 
@@ -456,13 +460,14 @@ class Plot():
 
             #Calculates the average of the ROI for each echo_time/flip_angle with that slice number
 
-            print(np.shape(self.dcm_all_echoes[i])) # size (224,224) < (300,300)
+            # print(np.shape(self.dcm_all_echoes[i])) # size (224,224) < (300,300)
 
             dcm_image = Image.fromarray(self.dcm_all_echoes[i]).resize((300, 300)) #CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AND THE
                                                                                    #AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
             croped_dcm_image = dcm_image.crop(coordinates)
             croped_pixel_array = np.array(croped_dcm_image)
-            croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
+            # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
+            print('ROI shape = {0}'.format(np.shape(croped_pixel_array)))
 
             self.maximo[i] = np.max(croped_pixel_array)
 
@@ -477,7 +482,6 @@ class Plot():
         self.average_by_tan = np.divide(self.average,np.tan(self.echoes*np.pi/180))
         self.create_plot()
 
-
         # print(self.average)
         # print(self.echoes)
         # print(np.sin(self.echoes*np.pi/180))
@@ -487,15 +491,17 @@ class Plot():
 
         print('Average @ 2 degrees = {0:.2e}'.format(self.average[0]))
         print('StDev   @ 2 degrees = {0:.2e}'.format(self.stdev[0]))
-        self.SNR = self.average[0]/self.stdev[0]
-        print('SNR = {0:.2f}'.format(self.SNR))
+        self.SNR2 = self.average[0]/self.stdev[0]
+        print('SNR_2 = {0:.2f}'.format(self.SNR2))
 
-        print('max - media = {0:.2e}'.format(self.maximo[0]-self.average[0]))
-        print('SNR2 = {0:.2f}'.format(self.average[0]/(self.maximo[0]-self.average[0])))
+        print('Average @ 10 degrees = {0:.2e}'.format(self.average[1]))
+        print('StDev   @ 10 degrees = {0:.2e}'.format(self.stdev[1]))
+        self.SNR10 = self.average[1]/self.stdev[1]
+        print('SNR_10 = {0:.2f}'.format(self.SNR10))
 
         a=(self.average_by_sin[1] - self.average_by_sin[0]) / (self.average_by_tan[1] - self.average_by_tan[0])
-        print('Coef angular = {0:.7f}'.format(a))
-        print('T1 = {0:.5e}'.format(-self.TR/np.log(a)))
+        print('Angular coeff. = {0:.7f}'.format(a))
+        print('T1_calculated  = {0:.5e}'.format(-self.TR/np.log(a)))
 
     def residual(self,params, x, data):
         # Parameters to be fitted must be declared below
@@ -538,14 +544,13 @@ class Plot():
         self.fitted_T1 = fitting.params['T1'].value
         # self.T2 = fitting.params['T2'].value
 
-
         E1 = np.exp(-self.TR/self.fitted_T1)
         b = self.fitted_amplitude*np.exp(-self.TE/self.T2)*(1-E1)
-        print('b = {0:.2e}'.format(b))
+        # print('b = {0:.2e}'.format(b))
         # print('amplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
-        print('T1 fitted = {0:.2e}'.format(self.fitted_T1))
+        print('\nT1 fitted = {0:.2e}'.format(self.fitted_T1))
         # print('TR = {0:.2e}'.format(self.TR))
-        print('E1 = {0:.2e}'.format(E1))
+        # print('E1 = {0:.2e}'.format(E1))
 
 
         if fitting.success: self.save_fit_params() # if fitting is succesfull, save the parrameters

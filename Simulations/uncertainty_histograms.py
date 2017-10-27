@@ -22,8 +22,8 @@ class main():
         self.sin_theta = np.sin(self.theta*np.pi/180)
         self.tan_theta = np.tan(self.theta*np.pi/180)
 
-#        self.index0      = 1 # 1 indicates angle of 2 degrees. Ideal is 15
-#        self.index1      = 9 # 9 indicates angle of 10 degrees. Ideal is 80
+        self.index0      = 1 # 1 indicates angle of 2 degrees. Ideal is 15
+        self.index1      = 9 # 9 indicates angle of 10 degrees. Ideal is 80
         self.index0      = 15 # 1 indicates angle of 2 degrees. Ideal is 15
         self.index1      = 80 # 9 indicates angle of 10 degrees. Ideal is 80
 
@@ -65,7 +65,7 @@ class main():
         self.counter = 0
 
         for SNR in range(15,16): #vary SNR
-            for i in range(1,2333): #multiple runs with same T1
+            for i in range(0,233): #multiple runs with same T1
             
                 for j in range(0,1):
                     if j == 0:  
@@ -79,9 +79,9 @@ class main():
     #                print('Ernst_angle = {0:.2f}'.format(thetaErnst))
                     
 #     Why did I use 3 as the amplitude below? I think I got this value from the data. 
-#                    ampIdeal = 3 / (np.sin(2*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(2*np.pi/180))) 
-#                    rho0 = ampIdeal
-                    rho0 = 1
+                    ampIdeal = 3 / (np.sin(2*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(2*np.pi/180))) 
+                    rho0 = ampIdeal
+#                    rho0 = 1
 
                     rho = rho0 * np.sin(self.theta*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(self.theta*np.pi/180))
                     rho_nonoise = rho
@@ -92,6 +92,7 @@ class main():
                     
                     SNR_list.append(SNR)
                     StDev = rho[self.index0]/SNR
+                    print(StDev)
                     noise = np.random.normal(0,StDev,self.n_points)
                     rho = rho + noise 
                     
@@ -112,7 +113,7 @@ class main():
     #                print('\nHand angular coef = {0:.6e}'.format(coef_angular))
 
 #                    if coef_angular < 0:
-                    if (Y[0]-Y[1]) < 0:
+                    if (Y[0]-Y[1]) < 0 or (X[0]-X[1]) < 0:
 
                         self.counter+=1
 #                        print('\nA negative angular coefficient was calculated! This indicates noise that is too high!')
@@ -121,8 +122,8 @@ class main():
                         break
                     else:
                         
-                        self.X0_array = np.append(self.X0_array,X[0])
-                        self.X1_array = np.append(self.X1_array,X[1])
+                        self.X0_array = np.append(self.X0_array,rho[self.index0])
+                        self.X1_array = np.append(self.X1_array,rho[self.index1])
                         self.Y0_array = np.append(self.Y0_array,Y[0])
                         self.Y1_array = np.append(self.Y1_array,Y[1])
                         
@@ -152,17 +153,17 @@ class main():
     #                            self.fit_x_points = np.linspace(X[0],X[1],1000)
     #                            self.fitted_plot = self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,self.fit_x_points)
     #                           
-#                            plt.figure(4)
-#    #                        graph = plt.axhline(y=rho_at_best_angles, color='y', linestyle='-',label ='71\% of A maximum')
-#    #                        graph = plt.axvline(x=thetaErnst, color='blue', linestyle='-')
-#                            graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
-#                            graph = plt.plot(self.theta,rho_nonoise,label='Signal A',linewidth=3)
-#    #                        graph = plt.plot(self.theta,rho2,label='Signal B',linewidth=2)
-#        #                        graph = plt.plot(theta,rhoapp,'ro')
-#                            plt.xlabel('Flip angle 'r'$\theta$ [Degrees]')
-#                            plt.ylabel('Signal S')
-#    #                        plt.legend()
-#    #                        plt.savefig('signaltheta.png',dpi=600)
+                            plt.figure(4)
+    #                        graph = plt.axhline(y=rho_at_best_angles, color='y', linestyle='-',label ='71\% of A maximum')
+    #                        graph = plt.axvline(x=thetaErnst, color='blue', linestyle='-')
+                            graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
+                            graph = plt.plot(self.theta,rho_nonoise,label='Signal A',linewidth=3)
+    #                        graph = plt.plot(self.theta,rho2,label='Signal B',linewidth=2)
+        #                        graph = plt.plot(theta,rhoapp,'ro')
+                            plt.xlabel('Flip angle 'r'$\theta$ [Degrees]')
+                            plt.ylabel('Signal S')
+    #                        plt.legend()
+    #                        plt.savefig('signaltheta.png',dpi=600)
                                 
                             plt.figure(5)
         #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
@@ -191,19 +192,30 @@ class main():
         croped_pixel_array = np.loadtxt('croped_pixel_array.txt')
         croped_pixel_array = np.ravel(croped_pixel_array) #transform 2D to 1D array
 
+        print(np.sum(np.histogram(croped_pixel_array)[0]))
+        print(np.sum(np.histogram(self.X0_array)[0]))
+        print(np.sum(np.histogram(self.X1_array)[0]))
+        print(np.sum(np.histogram(self.Y0_array)[0]))
+        print(np.sum(np.histogram(self.Y1_array)[0]))
+
+
         plt.figure(10)
         plt.hist(croped_pixel_array-np.median(croped_pixel_array),bins=bins,label='Data',alpha=0.3)
 
-#        plt.hist((self.X0_array-np.median(self.X0_array))/np.amax(self.X0_array),bins=bins,label='X_2',alpha=0.3)
-#        plt.hist((self.X1_array-np.median(self.X1_array))/np.amax(self.X1_array),bins=bins,label='X_10',alpha=0.3)
+        plt.hist((self.X0_array-np.median(self.X0_array))/np.amax(self.X0_array),bins=bins,label='X_2',alpha=0.3)
+        plt.hist((self.X1_array-np.median(self.X1_array))/np.amax(self.X1_array),bins=bins,label='X_10',alpha=0.3)
       
-        plt.hist((self.Y0_array-np.median(self.Y0_array))/np.amax(self.Y0_array),bins=bins,label='Y_2',alpha=0.3)
-        plt.hist((self.Y1_array-np.median(self.Y1_array))/np.amax(self.Y1_array),bins=bins,label='Y_10',alpha=0.3)
+#        plt.hist((self.Y0_array-np.median(self.Y0_array))/np.amax(self.Y0_array),bins=bins,label='Y_2',alpha=0.3)
+#        plt.hist((self.Y1_array-np.median(self.Y1_array))/np.amax(self.Y1_array),bins=bins,label='Y_10',alpha=0.3)
         plt.legend()
+#        x1,x2,y1,y2 = plt.axis()
+#        plt.axis((x1,x2,0,5))
         
         plt.figure(11)
-        plt.hist(self.difference_list/np.amax(self.difference_list),bins=bins,label="Dif",alpha=0.5)
+        plt.hist((self.difference_list)/np.amax(self.difference_list),bins=bins,label="Dif",alpha=0.5)
         plt.legend()
+#        x1,x2,y1,y2 = plt.axis()
+#        plt.axis((-0.9,0.9,0,40))
 
         
         print(np.shape(croped_pixel_array))
