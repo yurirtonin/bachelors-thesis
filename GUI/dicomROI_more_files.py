@@ -113,14 +113,14 @@ class SearchFolder(Frame):
             # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2001_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/901_AXI FLIP 2/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2001_AXI FLIP 2/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/901_AXI FLIP 2/DICOM'
 
             else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2101_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/1001_AXI FLIP 10/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2101_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/1001_AXI FLIP 10/DICOM'
 
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
@@ -547,8 +547,8 @@ class Plot():
         E1 = np.exp(-self.TR/self.fitted_T1)
         b = self.fitted_amplitude*np.exp(-self.TE/self.T2)*(1-E1)
         # print('b = {0:.2e}'.format(b))
-        # print('amplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
-        print('\nT1 fitted = {0:.2e}'.format(self.fitted_T1))
+        print('\namplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
+        print('T1 fitted = {0:.2e}'.format(self.fitted_T1))
         # print('TR = {0:.2e}'.format(self.TR))
         # print('E1 = {0:.2e}'.format(E1))
 
