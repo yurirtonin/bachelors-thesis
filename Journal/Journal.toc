@@ -1,0 +1,4 @@
+\select@language {brazilian}
+\contentsline {chapter}{\nonumberline Ter\IeC {\c c}a, 31 de Outubro de 2017}{1}{chapter*.2}
+\contentsline {experiment}{\numberline {1}An\IeC {\'a}lise de Dados}{1}{experiment.1.1}
+\contentsline {experiment}{\numberline {2}An\IeC {\'a}lise de Dados}{2}{experiment.1.2}

@@ -18,6 +18,9 @@ from PIL import Image
 
 # Opening original image to be transformed
 img = Image.open('image.png').convert('L') #Converting to grayscale
+
+print(type(Image.open('image.png')))
+
 img.save('greyscale.png') #Saving grayscale image
 imagem = mplim.imread('greyscale.png')
 plb.imshow(imagem,cmap='gray')

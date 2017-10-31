@@ -1,0 +1,170 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Daily Laboratory Book
+% LaTeX Template
+%
+% This template has been downloaded from:
+% http://www.latextemplates.com
+%
+% Original author:
+% Frank Kuster (http://www.ctan.org/tex-archive/macros/latex/contrib/labbook/)
+%
+% Important note:
+% This template requires the labbook.cls file to be in the same directory as the
+% .tex file. The labbook.cls file provides the necessary structure to create the
+% lab book.
+%
+% The \lipsum[#] commands throughout this template generate dummy text
+% to fill the template out. These commands should all be removed when 
+% writing lab book content.
+%
+% HOW TO USE THIS TEMPLATE 
+% Each day in the lab consists of three main things:
+%
+% 1. LABDAY: The first thing to put is the \labday{} command with a date in 
+% curly brackets, this will make a new page and put the date in big letters 
+% at the top.
+%
+% 2. EXPERIMENT: Next you need to specify what experiment(s) you are 
+% working on with an \experiment{} command with the experiment shorthand 
+% in the curly brackets. The experiment shorthand is defined in the 
+% 'DEFINITION OF EXPERIMENTS' section below, this means you can 
+% say \experiment{pcr} and the actual text written to the PDF will be what 
+% you set the 'pcr' experiment to be. If the experiment is a one off, you can 
+% just write it in the bracket without creating a shorthand. Note: if you don't 
+% want to have an experiment, just leave this out and it won't be printed.
+%
+% 3. CONTENT: Following the experiment is the content, i.e. what progress 
+% you made on the experiment that day.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[idxtotoc,hyperref,openany]{labbook} % 'openany' here removes the gap page between days, erase it to restore this gap; 'oneside' can also be added to remove the shift that odd pages have to the right for easier reading
+
+\usepackage[ 
+  backref=page,
+  pdfpagelabels=true,
+  plainpages=false,
+  colorlinks=true,
+  bookmarks=true,
+  pdfview=FitB]{hyperref} % Required for the hyperlinks within the PDF
+
+\usepackage[brazilian]{babel}  
+\usepackage{booktabs} % Required for the top and bottom rules in the table
+\usepackage{float} % Required for specifying the exact location of a figure or table
+\usepackage{graphicx} % Required for including images
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage[utf8]{inputenc}
+
+\usepackage[T1]{fontenc} % Permite copiar e colar textos do PDF para outros locais, sem desformatar os caracteres acentuados
+\usepackage[separate-uncertainty=true,multi-part-units=single]{siunitx} %Inserir unidades no SI de maneira formatada
+\usepackage[parfill]{parskip} %Include empty line between paragraphs
+
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Command to make the lines in the title page
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+%----------------------------------------------------------------------------------------
+%	DEFINITION OF EXPERIMENTS
+%----------------------------------------------------------------------------------------
+
+\newexperiment{simulation}{Simulação}
+\newexperiment{data}{Análise de Dados}
+\newexperiment{gui}{Programação da GUI}
+\newexperiment{table}{This shows a sample table}
+%\newexperiment{shorthand}{Description of the experiment}
+
+%---------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\frontmatter % Use Roman numerals for page numbers
+\title{
+\begin{center}
+\HRule \\[0.4cm]
+{\Huge \bfseries Laboratory Journal \\[0.5cm] \Large Trabalho de Conclusão e Curso}\\[0.4cm] % Degree
+\HRule \\[1.5cm]
+\end{center}
+}
+\author{\Huge Yuri R. Tonin \\ \\ \LARGE yuri@df.ufscar.br \\[2cm]} % Your name and email address
+\date{Começo 31 de Outubro de 2017} % Beginning date
+\maketitle
+
+\tableofcontents
+
+\mainmatter % Use Arabic numerals for page numbers
+
+%----------------------------------------------------------------------------------------
+%	LAB BOOK CONTENTS
+%----------------------------------------------------------------------------------------
+
+% Blank template to use for new days:
+
+%\labday{Day, Date Month Year}
+
+%\experiment{}
+
+%Text
+
+%-----------------------------------------
+
+%\experiment{}
+
+%Text
+
+%----------------------------------------------------------------------------------------
+
+\labday{Terça, 31 de Outubro de 2017}
+
+\experiment{data}
+
+
+Ao realizar simulações, observamos que um sinal com um ruído aleatório (de distribuição gaussiana e largura 1 desvio padrão) causava uma grande incerteza na posição dos pontos da curva linear (figura \ref{fig:linearcurve}). O comportamento esperado é que o ponto a esquerda representa o ângulo maior (no caso, $\SI{10}{\degree})$, enquanto que o outro represente o ângulo menor ($\SI{2}{\degree}$). As simulações mostravam caso em que as posições se invertiam, devido ao grande ruído. 
+
+Seja $S$ o sinal. No eixo Y, plota-se $S/\sin$. No eixo X, $S/\tan$. Espera-se que $S / \sin(\SI{2}{\degree}) > S_{10} / \sin(\SI{10}{\degree})$ pois o numerador cresce menos que o denominador quando se muda o ângulo de $\SI{2}{\degree}$ para $\SI{2}{\degree}$. Para ver isso basta plotar uma curva do sinal ideal e ver a variação em cada valor dos ângulos.
+
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.5\linewidth]{linearcurve}
+	\end{center}
+	\caption{}
+	\label{fig:linearcurve}
+\end{figure}
+
+
+Voltamos então a GUI para avaliar se os fittings também apresentavam o mesmo comportamento. Descobrimos que os valores estavam sempre invertidos, isto é, o ponto da esquerda era o de $\SI{2}{\degree}$ e o da direita de $\SI{10}{\degree}$. O motivo é que o valor de $S_{10} >> S_2$. Isso não pode estar correto. Portanto, tudo indica que há uma diferença de ganho no sinal em diferentes aquisições, já que um conjunto de dados com determinado ângulo diz respeito UMA aquisição.
+
+Iremos então realizar uma análise dessa diferença no sinal para cada um dos ângulo. Usaremos a GUI para dados de diversos pacientes e analisaremos a inclinação da reta é aproximadamente a mesma para todos os pacientes. se houver uma consistência, poderemos fazer o mesmo para uma região de gorda (onde o contraste não atinge) e outra de rim (por onde o contraste passa). Essas regiões poderão ser utilizadas como referência para criarmos um ``segundo rescaling'' e obter os valores corretos (ou mais próximos dos corretos) para a média de uma ROI (sinal).
+
+\experiment{data}
+
+O Fernando me passou os dados de diversos pacientes. Por agilidade, optamos por calcular as médias das ROIs pelo MIPAV. Utilizando o MIPAV, fiz a análise de apenas 1 paciente para as imagens pré-contraste. Algo estranho aconteceu: as médias da ROI estão dando valores (muito!) diferentes do que quando calculo pela minha GUI do Python. E o pior: pelo MIPAV, a diferença de intensidade da imagem de 2 para 10 graus parece ser de por volta 4 vezes, como deve ser! \textbf{Checar documentação do MIPAV} para ver se calculei corretamente as médias pelo software. Caso isso se confirme, terei que ver na GUI se fiz algum cálculo com a imagem que possa estar alterando os valores do pixels e mudando tanto assim a média do sinal na ROI. Também posso tentar entender como o Python importa as imagens; quem sabe na importação algo está alterando os valores...
+
+%----------------------------------------------------------------------------------------
+%	FORMULAE
+%----------------------------------------------------------------------------------------
+
+\newpage
+
+\huge \textbf{Fórmulas} \\ \\
+
+\normalsize \textbf{Formula 1 - Pythagorean theorem}\\ \\
+$a^2 + b^2 = c^2$\\ \\
+
+%-----------------------------------------
+
+%\textbf{Formula X - Description}\\ \\
+
+%Formula
+
+%----------------------------------------------------------------------------------------
+
+\end{document}

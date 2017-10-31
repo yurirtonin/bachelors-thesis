@@ -144,11 +144,11 @@ class main():
 #                                self.fit_x_points = np.linspace(X[0],X[1],1000)
 #                                self.fitted_plot = self.model_equation(self.fitted_amplitude,self.TE,self.TR,self.fitted_T1,self.T2,self.fit_x_points)
                                
-#                            plt.figure(1)
+                            plt.figure(1)
 #                            graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
-#                            graph = plt.plot(self.theta,rho_nonoise,label='Signal A',linewidth=3)
-#                            plt.xlabel('Flip angle 'r'$\theta$ [Degrees]')
-#                            plt.ylabel('Signal S')
+                            graph = plt.plot(self.theta,rho_nonoise,label='Signal A',linewidth=3)
+                            plt.xlabel('Flip angle 'r'$\theta$ [Degrees]')
+                            plt.ylabel('Signal S')
                                 
 #                            plt.figure(2)
 #                            graph1 = plt.plot(X,Y,'o')

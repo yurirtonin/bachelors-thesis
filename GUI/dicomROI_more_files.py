@@ -19,8 +19,8 @@ import numpy as np
 from lmfit import minimize, Parameters # lmfit is the package for fitting
 
 # ATTENTION: This program was first implemented for an analysis of slice numbers and echo times. Only later it was
-# switched to analyze slice number and flip angle. Therefore, lost of arrays and variables that coitain "echo" in their
-# names posses FLIP ANGLE values, and NOT ECHO TIME values.
+# switched to analyze slice number and flip angle. Therefore, lost of arrays and variables contain "echo" in their
+# names, but they actually posses FLIP ANGLE values!
 
 class SecondaryFrames(Frame):
 
@@ -52,7 +52,7 @@ class SearchFolder(Frame):
         self.right_frame2  = right_frame2
 
         self.entry_frame = Frame(self.parent)
-        self.label_acquisition  = Label(self.entry_frame,text= '(insira na caixa o número de aquisições a serem importadas na análise)')
+        self.label_acquisition  = Label(self.entry_frame,text= '- Insira na caixa o número de aquisições a serem importadas na análise')
         self.acquisition_number = IntVar()
         self.acquisition_number = Entry(self.entry_frame,width=11,justify=CENTER)
         self.acquisition_number.delete(0,END)
@@ -62,7 +62,7 @@ class SearchFolder(Frame):
 
 
         self.search_button = Button(self.parent, text="Buscar pasta", command=self.get_images)  # se colocar search_folder() - com () - ele chama a função automaticamente!
-        self.path_box      = Label(self.parent, text='(selecione a pasta com as imagens DICOM)', relief=FLAT)
+        self.path_box      = Label(self.parent, text='- Selecione a pasta com as imagens DICOM', relief=FLAT)
 
         self.dirname = ''
 
@@ -113,14 +113,13 @@ class SearchFolder(Frame):
             # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2001_AXI FLIP 2/DICOM'
                 # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/901_AXI FLIP 2/DICOM'
-
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ001/901_AXI FLIP 2/DICOM'
             else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC001/2101_AXI FLIP 10/DICOM'
                 # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/1001_AXI FLIP 10/DICOM'
+                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ001/1001_AXI FLIP 10/DICOM'
 
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
@@ -365,6 +364,7 @@ class InteractiveCanvas(Frame):
         self.canvas.coords(self.rect, self.start_x, self.start_y, curX, curY)
 
         self.coordenadas = self.canvas.coords(self.rect)
+        print(self.coordenadas)
 
     def on_button_release(self, event):
         pass
@@ -410,7 +410,9 @@ class InteractiveCanvas(Frame):
 
         dcm_pixels = dcm_read.pixel_array      #NOT USING RESCALE HERE BECAUSE THIS IS USED FOR USER VISUALIZATION ONLY. Rescaling is done only in the previous for loop, since that data is the one used for plotting/fitting
         dcm_pixel_values = dcm_pixels  # extract pixel values
-        dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
+        # dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
+        dcm_image = Image.fromarray(dcm_pixel_values)                       # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
+
         new_tk_image = ImageTk.PhotoImage(dcm_image)  # crete tk image
 
         imagem = Label(left_frame, image='')  # Create empty image to keep a reference of image. That way, GarbageCollector won't throw away image (http://effbot.org/pyfaq/why-do-my-tkinter-images-not-place_interactive_canvasear.htm)
@@ -456,14 +458,15 @@ class Plot():
         self.maximo   = np.empty(len(self.dcm_all_echoes))
 
 
-        for i in range(len(self.dcm_all_echoes)):
+        for i in range(len(self.dcm_all_echoes)): #  length o dcm_all_echoes should be the same number of distinct angles we have, probably 2 angles
 
-            #Calculates the average of the ROI for each echo_time/flip_angle with that slice number
+            # Calculates the average of the ROI for each echo_time/flip_angle with that slice number
 
-            # print(np.shape(self.dcm_all_echoes[i])) # size (224,224) < (300,300)
+            print('Image shape = {0}'.format(np.shape(self.dcm_all_echoes[i]))) # size (224,224) < (300,300)
 
-            dcm_image = Image.fromarray(self.dcm_all_echoes[i]).resize((300, 300)) #CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AND THE
-                                                                                   #AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
+            # dcm_image = Image.fromarray(self.dcm_all_echoes[i]).resize((300, 300)) # CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
+            dcm_image = Image.fromarray(self.dcm_all_echoes[i]) # CAREFUL. SIZE OF THE OPENED IMAGE MUST BE THE SAME AS THE ONE IN THE GUI BECAUSE COORDINATES ARE GIVEN IN THE GUI IMAGE
+
             croped_dcm_image = dcm_image.crop(coordinates)
             croped_pixel_array = np.array(croped_dcm_image)
             # croped_pixel_array = croped_pixel_array/np.max(croped_pixel_array) #normalize
@@ -473,35 +476,37 @@ class Plot():
 
             self.average[i] = np.average(croped_pixel_array)
             self.stdev[i]   = np.std(croped_pixel_array)
-            np.savetxt('croped_pixel_array.txt',croped_pixel_array,fmt='%10.10f')
-
+            if i == 0:  np.savetxt('croped_pixel_array2.txt',croped_pixel_array,fmt='%10.10f')
+            else: np.savetxt('croped_pixel_array10.txt',croped_pixel_array,fmt='%10.10f')
+            
         # print(self.average)
         # print(self.average[1]/self.average[0])
-        self.echoes = np.array(np.unique(self.slice_and_echo[:,1]))
+        self.echoes = np.array(np.unique(self.slice_and_echo[:,1])) # clean array to have only unique angle values
         self.average_by_sin = np.divide(self.average,np.sin(self.echoes*np.pi/180))
         self.average_by_tan = np.divide(self.average,np.tan(self.echoes*np.pi/180))
         self.create_plot()
 
-        # print(self.average)
+        # print(np.sin(self.echoes*np.pi/180))
+        print(self.average)
         # print(self.echoes)
         # print(np.sin(self.echoes*np.pi/180))
         # print(np.tan(self.echoes*np.pi/180))
-        # print(self.average_by_sin)
-        # print(self.average_by_tan)
+        # print('Avg/Sin = {0}'.format(self.average_by_sin))
+        # print('Avg/Tan = {0}'.format(self.average_by_tan))
 
-        print('Average @ 2 degrees = {0:.2e}'.format(self.average[0]))
-        print('StDev   @ 2 degrees = {0:.2e}'.format(self.stdev[0]))
+        # print('Average @ 2 degrees = {0:.2e}'.format(self.average[0]))
+        # print('StDev   @ 2 degrees = {0:.2e}'.format(self.stdev[0]))
         self.SNR2 = self.average[0]/self.stdev[0]
-        print('SNR_2 = {0:.2f}'.format(self.SNR2))
+        # print('SNR_2 = {0:.2f}'.format(self.SNR2))
 
-        print('Average @ 10 degrees = {0:.2e}'.format(self.average[1]))
-        print('StDev   @ 10 degrees = {0:.2e}'.format(self.stdev[1]))
+        # print('Average @ 10 degrees = {0:.2e}'.format(self.average[1]))
+        # print('StDev   @ 10 degrees = {0:.2e}'.format(self.stdev[1]))
         self.SNR10 = self.average[1]/self.stdev[1]
-        print('SNR_10 = {0:.2f}'.format(self.SNR10))
+        # print('SNR_10 = {0:.2f}'.format(self.SNR10))
 
         a=(self.average_by_sin[1] - self.average_by_sin[0]) / (self.average_by_tan[1] - self.average_by_tan[0])
         print('Angular coeff. = {0:.7f}'.format(a))
-        print('T1_calculated  = {0:.5e}'.format(-self.TR/np.log(a)))
+        print('T1_calculated  = {0:.5e}\n'.format(-self.TR/np.log(a)))
 
     def residual(self,params, x, data):
         # Parameters to be fitted must be declared below
@@ -547,8 +552,8 @@ class Plot():
         E1 = np.exp(-self.TR/self.fitted_T1)
         b = self.fitted_amplitude*np.exp(-self.TE/self.T2)*(1-E1)
         # print('b = {0:.2e}'.format(b))
-        print('\namplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
-        print('T1 fitted = {0:.2e}'.format(self.fitted_T1))
+        # print('amplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
+        print('\nT1 fitted = {0:.2e}'.format(self.fitted_T1))
         # print('TR = {0:.2e}'.format(self.TR))
         # print('E1 = {0:.2e}'.format(E1))
 
