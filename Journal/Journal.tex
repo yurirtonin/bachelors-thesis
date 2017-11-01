@@ -146,7 +146,24 @@ Iremos então realizar uma análise dessa diferença no sinal para cada um dos �
 
 \experiment{data}
 
-O Fernando me passou os dados de diversos pacientes. Por agilidade, optamos por calcular as médias das ROIs pelo MIPAV. Utilizando o MIPAV, fiz a análise de apenas 1 paciente para as imagens pré-contraste. Algo estranho aconteceu: as médias da ROI estão dando valores (muito!) diferentes do que quando calculo pela minha GUI do Python. E o pior: pelo MIPAV, a diferença de intensidade da imagem de 2 para 10 graus parece ser de por volta 4 vezes, como deve ser! \textbf{Checar documentação do MIPAV} para ver se calculei corretamente as médias pelo software. Caso isso se confirme, terei que ver na GUI se fiz algum cálculo com a imagem que possa estar alterando os valores do pixels e mudando tanto assim a média do sinal na ROI. Também posso tentar entender como o Python importa as imagens; quem sabe na importação algo está alterando os valores...
+O Fernando me passou os dados de diversos pacientes. Por agilidade, optamos por calcular as médias das ROIs pelo MIPAV. Fiz a análise de apenas 1 paciente para as imagens pré-contraste. Algo estranho aconteceu: as médias da ROI estão dando valores (muito!) diferentes do que quando calculo pela minha GUI do Python. E o pior: pelo MIPAV, a diferença de intensidade da imagem de 2 para a de 10 graus parece ser de 4 vezes, como deve ser! \textbf{Checar documentação do MIPAV} para ver se calculei corretamente as médias pelo software. Caso isso se confirme, terei que ver na GUI se fiz algum cálculo com a imagem que possa estar alterando os valores do pixels e mudando tanto assim a média do sinal na ROI. Também posso tentar entender como o Python importa as imagens; quem sabe na importação algo está alterando os valores...
+
+ERRATA: O motivo para a diferença acima foi encontrado no dia seguinte.
+
+\labday{Quarta, 1 de novembro de 2017}
+
+\experiment{data}
+
+A diferença nos valores do MIPAV e da GUI citadas ontem ocorrem por causa do rescaling que fiz na GUI. O MIPAV não faz o rescaling. Assim, extrai o valor dos coeficientes de rescaling pela GUI e vou implementar o rescaling pelo excel posteriormente após extrair todos os valores de intensidade pelo MIPAV.
+
+
+
+
+
+
+
+
+
 
 %----------------------------------------------------------------------------------------
 %	FORMULAE

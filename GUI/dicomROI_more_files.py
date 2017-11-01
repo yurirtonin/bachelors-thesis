@@ -64,7 +64,7 @@ class SearchFolder(Frame):
         self.search_button = Button(self.parent, text="Buscar pasta", command=self.get_images)  # se colocar search_folder() - com () - ele chama a função automaticamente!
         self.path_box      = Label(self.parent, text='- Selecione a pasta com as imagens DICOM', relief=FLAT)
 
-        self.dirname = ''
+        # self.dirname = ''
 
     def atoi(self,text):
         return int(text) if text.isdigit() else text
@@ -80,7 +80,7 @@ class SearchFolder(Frame):
     def get_images(self):
 
 
-        # self.dirname           = []
+        # self.dirname           = [] #comment this line if you insert folder path by hand in the conditional "if j == 0" a few lines below
         self.dcm_folder        = []
         self.dcm_files         = []
         self.slice_thickness   = []
@@ -107,20 +107,35 @@ class SearchFolder(Frame):
                 for child in self.left_frame.winfo_children():
                     child.destroy()
 
-            if j == 0:
+
+            # if j == 0:
             # A conditional for selecting all the folders. This is only needed if you want to declare by hand
             # the folder with the dicom files. If you want the interface to search the folder to appear when you click
             # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
-                # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
+            #     self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
                 # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/901_AXI FLIP 2/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ001/901_AXI FLIP 2/DICOM'
-            else:
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ001/901_AXI FLIP 2/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ002/1201_AXI FLIP 2/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ003/801_AXI FLIP 2/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ004/1201_AXI FLIP 2/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ005/1301-MR1_AXI FLIP 2/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ006/1001_AXI FLIP 2/DICOM'
+
+            # else:
                 # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
                 # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
                 # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/1001_AXI FLIP 10/DICOM'
-                self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ001/1001_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ001/1001_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ002/1301_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ003/901_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ004/1301_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ005/1401-MR1_AXI FLIP 10/DICOM'
+                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ006/1101_AXI FLIP 10/DICOM'
 
+            self.dirname = (filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
+
+            print(self.dirname)
 
             self.path_box.configure(text='Diretório: {0:s}'.format(self.dirname)) #Changes the name of the label to show the last selected folder
             self.dcm_folder.append(self.dirname) # Saves the folder path with dcm files to a list
@@ -178,10 +193,8 @@ class SearchFolder(Frame):
             self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])  #THE NAME "SLICE AND ECHO" IS NOT SUITABLE! IT SHOULD ACTUALLY BE SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION WAS CREATED FOR ECHO TIMES!
 
 
-        # print(self.rescale_slope[0][0])
-        # print(self.rescale_intercept[0][0])
-        # print(self.rescale_slope[1][0])
-        # print(self.rescale_intercept[1][0])
+        print('Rescale2:  A = {0:.2f}     B = {1:.1f} '.format(self.rescale_slope[0][0],self.rescale_intercept[0][0]))
+        print('Rescale10: A = {0:.2f}     B = {1:.1f} '.format(self.rescale_slope[1][0],self.rescale_intercept[1][0]))
 
         # print(dcm_read.dir())  # All Dicom tag available
 
@@ -386,7 +399,7 @@ class InteractiveCanvas(Frame):
         for i in indexes:  # Go through index values. Check and record those in which echo time (element) matches user input
 
             #get array of arrays with pixel values for all echoes of a slice
-            self.which_folder = 0
+            self.which_folder = 0  # used as index to select the right rescaling for the pixel array
             for n in range(len(dcm_folder)): #the range of elements of dcm_folder should match the number of different flip angles/echo times
                 # Will evaluate if the i_th file dcm_files[i] exists for the folder we have.
                 # It will match for 1 folder only. When it does, isfile returns True, and we
@@ -395,9 +408,9 @@ class InteractiveCanvas(Frame):
                 if os.path.isfile(file_path):
                     dcm_read = dicom.read_file(file_path)  # read file user wants
                     # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0]) / rescale_slope[self.user_echo_time_index][0]
-                    dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.which_folder][0]) / rescale_slope[self.which_folder][0]
+                    # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.which_folder][0]) / rescale_slope[self.which_folder][0]
                     # dcm_pixels = dcm_pixels/np.max(dcm_pixels)
-                    # dcm_pixels = dcm_read.pixel_array
+                    dcm_pixels = dcm_read.pixel_array
                     self.dcm_all_echoes.append(dcm_pixels)  # extract pixel values
 
                 self.which_folder += 1    # used as index to select the right rescaling for the pixel array
@@ -478,7 +491,7 @@ class Plot():
             self.stdev[i]   = np.std(croped_pixel_array)
             if i == 0:  np.savetxt('croped_pixel_array2.txt',croped_pixel_array,fmt='%10.10f')
             else: np.savetxt('croped_pixel_array10.txt',croped_pixel_array,fmt='%10.10f')
-            
+
         # print(self.average)
         # print(self.average[1]/self.average[0])
         self.echoes = np.array(np.unique(self.slice_and_echo[:,1])) # clean array to have only unique angle values
