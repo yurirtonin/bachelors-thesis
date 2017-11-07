@@ -18,29 +18,40 @@ import numpy as np
 # from scipy import optimize
 from lmfit import minimize, Parameters # lmfit is the package for fitting
 
+# CODE EXPLANATION:
+#
+#
+#
+#
+#
+#
+#
+
+
 # ATTENTION: This program was first implemented for an analysis of slice numbers and echo times. Only later it was
 # switched to analyze slice number and flip angle. Therefore, lost of arrays and variables contain "echo" in their
 # names, but they actually posses FLIP ANGLE values!
 
 class SecondaryFrames(Frame):
 
-    # This classes declares frames to divide de main window in regions for different widgets
+    # This class declares frames to divide de main window in regions for different widgets
 
-    def __init__(self,parent):
+    def __init__(self, parent):
 
         self.top_frame = Frame(parent)
         self.left_frame = Frame(parent, width=400)
-        self.right_frame = Frame(parent, width=500)#, bg="green")
+        self.right_frame = Frame(parent, width=500)
         self.right_frame2 = Frame(parent)
 
         self.horizontal_line = ttk.Separator(parent, orient=HORIZONTAL)
         self.vertical_line = ttk.Separator(parent, orient=VERTICAL)
 
+
 class SearchFolder(Frame):
 
-# This class is responsible for selecting the folders where acquistion files area and, after that is done, placing the
-# scales and canvas used for selecting a specific image and drawing a region of interest (ROI) on it. The last action
-# performed by this class is to select the ROI through a button, so that data is exported to a plot.
+    # This class is responsible for selecting the folders where acquisition files area and, after that is done, placing
+    # the scales and canvas used for selecting a specific image and drawing a region of interest (ROI) on it. The last
+    # action performed by this class is to select the ROI through a button, so that data is exported to a plot.
 
     def __init__(self,parent,left_frame,right_frame,right_frame2,first_run,first_plot):
 
@@ -51,14 +62,14 @@ class SearchFolder(Frame):
         self.right_frame   = right_frame
         self.right_frame2  = right_frame2
 
-        self.entry_frame = Frame(self.parent)
-        self.label_acquisition  = Label(self.entry_frame,text= '- Insira na caixa o número de aquisições a serem importadas na análise')
+        self.entry_frame        = Frame(self.parent)
+        self.label_acquisition  = Label(self.entry_frame, text= '- Insira na caixa o número de aquisições a serem importadas na análise')
         self.acquisition_number = IntVar()
-        self.acquisition_number = Entry(self.entry_frame,width=11,justify=CENTER)
-        self.acquisition_number.delete(0,END)
-        self.acquisition_number.insert(0,'2')
-        self.acquisition_number.pack(padx=2, pady=1, anchor="w",side=LEFT)
-        self.label_acquisition.pack(padx=2, pady=1, anchor="w",side=LEFT)
+        self.acquisition_number = Entry(self.entry_frame, width=11, justify=CENTER)
+        self.acquisition_number.delete(0, END)
+        self.acquisition_number.insert(0, '2')
+        self.acquisition_number.pack(padx=2, pady=1, anchor="w", side=LEFT)
+        self.label_acquisition.pack(padx=2, pady=1, anchor="w", side=LEFT)
 
 
         self.search_button = Button(self.parent, text="Buscar pasta", command=self.get_images)  # se colocar search_folder() - com () - ele chama a função automaticamente!
@@ -66,7 +77,7 @@ class SearchFolder(Frame):
 
         # self.dirname = ''
 
-    def atoi(self,text):
+    def atoi(self, text):
         return int(text) if text.isdigit() else text
 
     def natural_keys(self,text):
@@ -78,7 +89,6 @@ class SearchFolder(Frame):
         return [self.atoi(c) for c in re.split('(\d+)', text)]
 
     def get_images(self):
-
 
         # self.dirname           = [] #comment this line if you insert folder path by hand in the conditional "if j == 0" a few lines below
         self.dcm_folder        = []
@@ -93,20 +103,19 @@ class SearchFolder(Frame):
         self.slice_and_flip    = []
         self.FOVx              = []
         self.FOVy              = []
+        self.acquisition_time  = []
         self.gradient_echo_train_length = []
         self.slice_and_echo    = np.array([],dtype=np.int64).reshape(0,2)
-        self.acquisition_time = []
 
 
         for j in range(0,np.int(self.acquisition_number.get())):
             pass
 
             if self.first_run == False:
-            # Destroys all widgets inside of self.left_frame if this is not the first time the widget is being created.
-            # This is done so that the widget can be "refreshed" without a new one appearing on the screen
+                # Destroys all widgets inside of self.left_frame if this is not the first time the widget is created.
+                # This is done so that the widget can be "refreshed" without a new one appearing on the screen
                 for child in self.left_frame.winfo_children():
                     child.destroy()
-
 
             # if j == 0:
             # A conditional for selecting all the folders. This is only needed if you want to declare by hand
@@ -178,9 +187,9 @@ class SearchFolder(Frame):
                 self.flip_angle[j][i]    =  dcm_read[0x18, 0x1314].value
 
                 # Single value for all measurements
-                self.rows          = dcm_read[0x28, 0x10].value
-                self.columns       = dcm_read[0x28, 0x11].value
-                self.pixel_spacing = dcm_read[0x28, 0x30].value
+                self.rows            = dcm_read[0x28, 0x10].value
+                self.columns         = dcm_read[0x28, 0x11].value
+                self.pixel_spacing   = dcm_read[0x28, 0x30].value
                 self.number_averages = dcm_read[0x18, 0x83].value
 
                 self.acquisition_time[j][i] = dcm_read[0x8, 0x32].value
@@ -668,16 +677,15 @@ class MainApplication(Frame):
 
         # print(Tk().eval('info patchlevel'))
 
-        self.first_run = True
+        self.first_run  = True
         self.first_plot = True
 
-        self.secondary_frames  = SecondaryFrames(self.parent)
+        self.secondary_frames = SecondaryFrames(self.parent)
 
-        self.top_frame       = self.secondary_frames.top_frame
-        self.left_frame      = self.secondary_frames.left_frame
-        self.right_frame     = self.secondary_frames.right_frame
-        self.right_frame2    = self.secondary_frames.right_frame2
-
+        self.top_frame     = self.secondary_frames.top_frame
+        self.left_frame    = self.secondary_frames.left_frame
+        self.right_frame   = self.secondary_frames.right_frame
+        self.right_frame2  = self.secondary_frames.right_frame2
 
         self.secondary_frames.top_frame.pack(padx=5, pady=5, side=TOP, fill=X)
         self.secondary_frames.horizontal_line.pack(side=TOP, fill=X)
@@ -688,7 +696,6 @@ class MainApplication(Frame):
         self.secondary_frames.right_frame.pack(padx=5, pady=5, side=LEFT, fill=Y)
         self.secondary_frames.vertical_line.pack(side=LEFT, fill=Y)
         self.secondary_frames.right_frame2.pack(padx=5, pady=20,side=LEFT, fill=Y)
-
 
         self.search_folder_objects = SearchFolder(self.top_frame,self.left_frame,self.right_frame,self.right_frame2,self.first_run,self.first_plot)
 
