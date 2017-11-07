@@ -192,7 +192,6 @@ class SearchFolder(Frame):
 
             self.slice_and_echo = np.vstack([self.slice_and_echo,self.slice_and_flip[j]])  #THE NAME "SLICE AND ECHO" IS NOT SUITABLE! IT SHOULD ACTUALLY BE SLICE AND FLIP. MANTAINED IT LIKE THIS BECAUSE OF OLDER IMPLEMENTATION WAS CREATED FOR ECHO TIMES!
 
-
         print('Rescale2:  A = {0:.2f}     B = {1:.1f} '.format(self.rescale_slope[0][0],self.rescale_intercept[0][0]))
         print('Rescale10: A = {0:.2f}     B = {1:.1f} '.format(self.rescale_slope[1][0],self.rescale_intercept[1][0]))
 
@@ -706,8 +705,10 @@ if __name__ == '__main__':
 
 
 
-#Possible improvements to the code:
+#Improvements to be made:
 #   1 - Many variables imported from the DICOM header have a constant value for all images, but they are being imported
 #       as arrays. Change them to a single value may save computational time.
 #   2 - Make irregular ROI instead of a rectangular one
-#   3 - Increase image size Canvas without rescaling number of pixels, instead only zooming (which will result in poorer resolution)
+#   3 - Increase image size Canvas without changing number of pixels, only zooming (which will result in poorer
+#       resolution but will give the right average)
+#   4 -
