@@ -8,33 +8,38 @@ from math import exp #Dump everything in module "math" into the local namespace;
 from scipy.constants import hbar, pi, k # Get physical constants (e.g. planck h, hbar)
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 import numpy as np
 
 import pylab
 
 #Relaxation times in miliseconds:    
-T1_branca = 790*10**-3
-T2_branca = 90*10**-3
+T1_branca = 600*10**-3
+T2_branca = 80*10**-3
 
-T1_cinzenta = 920*10**-3
+T1_cinzenta = 950*10**-3
 T2_cinzenta = 100*10**-3
 
-T1_liquor = 4000*10**-3
-T2_liquor = 2000*10**-3
+T1_liquor = 4500*10**-3
+T2_liquor = 2200*10**-3
 
-T1_lipid = 260*10**-3
-T2_lipid = 80*10**-3
+T1_lipid = 250*10**-3
+T2_lipid = 60*10**-3
 
 
 Temp = 300 # in Kelvin
-rho = 110.4*6*10**23  # number of protons per liter in water
-gamma = 2.68*10**8 # proton gyromagnetic ratio
+rho = 110.4*6*10**23 / 10**-3  # number of protons per liter in water
+gamma = 2.68*10**8 / (2*pi) # proton gyromagnetic ratio in [1/(sec*Tesla)]
 B_0 = 1 # in Tesla
+
+print(k)
+print(hbar)
 
 #Initial Magnetization
 M_0 = rho*(gamma**2)*(hbar**2)*B_0/(4*k*Temp)
 print("M_0 = {0:2e}".format(M_0))
+M_0=1
 
 #Time array. Values in seconds
 t = np.linspace(0,3,100)
@@ -60,14 +65,16 @@ Longitudinal_magnetization(M_0,T1_liquor,t,"Longitudinal_liquor")
 Longitudinal_magnetization(M_0,T1_lipid,t,"Longitudinal_lipid")
 
 #Plotting Mz curves
-plt.figure(1)
+fig0, ax0 = plt.subplots()
 plt.plot(t,Mz["Longitudinal_branca"],label="Branca")
 plt.plot(t,Mz["Longitudinal_cinzenta"],label="Cinzenta")
 plt.plot(t,Mz["Longitudinal_liquor"],label="Liquor")
 plt.plot(t,Mz["Longitudinal_lipid"],label="Lipídio")
 plt.legend()
-plt.xlabel("Time [seconds]")
-plt.ylabel("Longitudinal Magnetization")
+plt.xlabel("Tempo [segundos]")
+plt.ylabel("Magnetização Longitudinal")
+ax0.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:.1f}'.format(y))) 
+
 pylab.savefig('Longitudinal_Magnetization.png',dpi=600)
 
 
@@ -78,14 +85,19 @@ Transversal_magnetization(M_0,T2_liquor,t,"Transversal_liquor")
 Transversal_magnetization(M_0,T2_lipid,t,"Transversal_lipid")
 
 #Plotting Mxy curves
-plt.figure(2)
+#plt.figure(2) 
+fig, ax = plt.subplots()
 plt.plot(t,Mxy["Transversal_branca"],label="Branca")
 plt.plot(t,Mxy["Transversal_cinzenta"],label="Cinzenta")
 plt.plot(t,Mxy["Transversal_liquor"],label="Liquor")
 plt.plot(t,Mxy["Transversal_lipid"],label="Lipídio")
 plt.legend()
-plt.xlabel("Time [seconds]")
-plt.ylabel("Transversal Magnetization")
+plt.xlabel("Tempo [segundos]")
+plt.ylabel("Magnetização Transversal")
+
+ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:.1f}'.format(y))) 
+#ax.set_xlim([0,12)
+
 pylab.savefig('Transversal_Magnetization.png',dpi=600)
 
 

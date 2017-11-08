@@ -74,6 +74,7 @@
 \newexperiment{simulation}{Simulação}
 \newexperiment{data}{Análise de Dados}
 \newexperiment{gui}{Programação da GUI}
+\newexperiment{writing}{Escrita do TCC}
 \newexperiment{table}{This shows a sample table}
 %\newexperiment{shorthand}{Description of the experiment}
 
@@ -89,12 +90,12 @@
 \title{
 \begin{center}
 \HRule \\[0.4cm]
-{\Huge \bfseries Laboratory Journal \\[0.5cm] \Large Trabalho de Conclusão e Curso}\\[0.4cm] % Degree
+{\Huge \bfseries Laboratory Journal \\[0.5cm] \Large Trabalho de Conclusão de Curso}\\[0.4cm] % Degree
 \HRule \\[1.5cm]
 \end{center}
 }
 \author{\Huge Yuri R. Tonin \\ \\ \LARGE yuri@df.ufscar.br \\[2cm]} % Your name and email address
-\date{Começo 31 de Outubro de 2017} % Beginning date
+\date{Início do Journal: 31 de Outubro de 2017} % Beginning date
 \maketitle
 
 \tableofcontents
@@ -170,9 +171,11 @@ Vemos que os SUBJ011 e SUBJ018 possuem valores bem altos para o coeficiente. Vem
 
 A variação é considerável. Preciso falar com o Fernando e ver se poderemos fazer a análise que tinhamos em mente ou não.
 
+EDIT: Dois pacientes (SUBJ011 e SUBJ018) apresentavam valores bem discrepantes do restante. Optamos por ignorar esses pontos. Ao ignorar esses pontos, a média e o desvio padrão melhoram consideravelmente (tabela 2). Vamos utilizar essa tabela sem esses 2 pacientes.
+
 \begin{table}[]
 	\centering
-	\caption{tabelaMedias}
+	\caption{Coeficiente angular entre os dois pontos de intensidade para diferente pacientes e regiões}
 	\label{tabelaMedias}
 	\begin{tabular}{ccccccc}
 		\hline
@@ -205,12 +208,35 @@ A variação é considerável. Preciso falar com o Fernando e ver se poderemos f
 	\end{tabular}
 \end{table}
 
+\begin{table}[]
+	\centering
+	\caption{Valores da média e desvio padrão após retirada dos pacientes 11 e 18}
+	\label{tabelaMedias2}
+	\begin{tabular}{|c|c|c|c|c|c|c|}
+		\hline
+		\textbf{Average} & 4.31 & 4.42 & 4.75 & 3.08 & 1.29 & 1.30 \\ \hline
+		\textbf{StDev}   & 1.55 & 1.87 & 2.08 & 0.99 & 0.68 & 0.58 \\ \hline
+	\end{tabular}
+\end{table}
 
 
+\labday{Quarta, 8 de novembro de 2017}
 
+\experiment{writing}
 
+Terminei uma primeira parte da introdução teórica sobre os fundamentos físicos da RM. Preciso agora falar do sinal (SIL, Transformada de Fourier, etc). Como devo estruturar essa segunda parte?
 
+\experiment{data}
 
+Ao analisar os valores da tablea \ref{tabelaMedias2}, vemos que a variação do coeficiente angular existe mas não é tão grande. Ou seja, apesar do rescaling de cada aquisição (2 e 10) serem muito diferentes e causarem um valor ilógico na diferença de intensidade dos pontos, essa ``ilogicidade'' mantém-se aproximadamente a mesma para os diversos pacientes. Portanto, podemos tentar realizar um segundo rescaling que irá corrigir esse ``erro'' do rescaling introduzido pelo uso dos dados provenientes de aquisições distintas.
+
+EDIT: Pelo paper de Garnov (2013), creio que podemos utilizar $T1_{gordura}=\SI{300}{\milli \second}$.
+
+ \section*{Como realizaremos a correção:}
+ 
+  Primeiramente, devemos o valor de $T_1$ para a gordura abdominal na literatura e assumir esse como o valor verdadeiro. Com esse valor, simularemos quantas vezes deve aumentar o sinal (fator $\alpha$) do ponto de $2^o$ para o ponto de $10^o$. Então, ajustaremos o dado da média de intensidade em $10^o$ para que este seja $\alpha$ vezes maior que o dado em $2^o$, isto é, multiplicaremos os dos dados por um fator $\beta$. Este novo fator será utilizado para ajustar os dados dos demais órgãos.
+  
+  Com os dados ajustados, iremos avaliar se as intensidades do fígado fornecem a posição correta dos pontos, como discutido no dia 31 de outubro de 2017. 
 
 %----------------------------------------------------------------------------------------
 %	FORMULAE

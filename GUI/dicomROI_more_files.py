@@ -718,4 +718,7 @@ if __name__ == '__main__':
 #   2 - Make irregular ROI instead of a rectangular one
 #   3 - Increase image size Canvas without changing number of pixels, only zooming (which will result in poorer
 #       resolution but will give the right average)
-#   4 -
+#   4 - No fim das contas, o que importa é a diferença no valor de T1 do fígado saudável para o doente. Portanto,
+#       precisamos implementar na GUI uma segunda importação. Assim, o valor do fitting de um par de imagens pré
+#       e de outro par pós contraste indicará se houve uma diferença significativa e, em caso afirmativo, a GUI dará
+#       a resposta se o tecido é doente.
