@@ -9,3 +9,6 @@
 \contentsline {chapter}{\nonumberline Quarta, 8 de novembro de 2017}{6}{chapter*.5}
 \contentsline {experiment}{\numberline {1}Escrita do TCC}{6}{experiment.4.1}
 \contentsline {experiment}{\numberline {2}An\IeC {\'a}lise de Dados}{6}{experiment.4.2}
+\contentsline {chapter}{\nonumberline Quinta, 9 de novembro de 2017}{7}{chapter*.7}
+\contentsline {experiment}{\numberline {1}An\IeC {\'a}lise de Dados}{7}{experiment.5.1}
+\contentsline {experiment}{\numberline {2}An\IeC {\'a}lise de Dados}{7}{experiment.5.2}

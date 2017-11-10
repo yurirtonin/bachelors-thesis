@@ -17,7 +17,7 @@ class main():
     
     def __init__(self):
         
-        self.n_points = 180
+        self.n_points = 20
         self.theta = np.linspace(1,self.n_points,self.n_points)
         self.sin_theta = np.sin(self.theta*np.pi/180)
         self.tan_theta = np.tan(self.theta*np.pi/180)
@@ -30,7 +30,8 @@ class main():
 
         train = 43
         self.TR = 3.78*10**-3*train
-        self.TE = 1.813*10**-3 
+#        self.TE = 1.813*10**-3 
+        self.TE = 1.78*10**-3 
         self.T2 = 72*10**-3
         #self.T1 = 678*10**-3
     
@@ -65,14 +66,15 @@ class main():
 
         for a in range(0,1):  
             if a == 0: 
-                T1 = 613.9*10**-3 # pre contrast 
+#                T1 = 613.9*10**-3 # pre contrast 
+                T1 = 10000*10**-3 # pre contrast 
             else:
                 T1 = 200.3*10**-3 # pro contrast           
             
 #                Besa values: T1 = 613.9 ms (pre) and T1 = 200.3 ms (post)
 
             for j in range(15,16): #vary SNR
-                for i in range(1,2333): #multiple runs with same T1
+                for i in range(1,2): #multiple runs with same T1
 #                        T1 = 700*10**-3
                     
     #                print('\n===== // ===== // ===== // ===== // ===== // =====')
@@ -95,6 +97,11 @@ class main():
                     
                     rho = rho0 * np.sin(self.theta*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(self.theta*np.pi/180))
                     rho_nonoise = rho
+                    print(rho_nonoise[self.index0])
+                    print(rho_nonoise[self.index1])
+                    print(rho_nonoise[self.index1]/rho_nonoise[self.index0])
+
+
 #                   rhoapp = rho0 * theta / (1+0.5*E1*theta**2/(1-E1))
         
 ##   Find best angles according to Deoni 2003:
@@ -176,7 +183,7 @@ class main():
                         plt.figure(4)
 #                        graph = plt.axhline(y=rho_at_best_angles, color='y', linestyle='-',label ='71\% of A maximum')
 #                        graph = plt.axvline(x=thetaErnst, color='blue', linestyle='-')
-                        graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
+#                        graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
                         graph = plt.plot(self.theta,rho_nonoise,label='Signal A',linewidth=3)
 #                        graph = plt.plot(self.theta,rho2,label='Signal B',linewidth=2)
     #                        graph = plt.plot(theta,rhoapp,'ro')
@@ -185,17 +192,20 @@ class main():
 #                        plt.legend()
 #                        plt.savefig('signaltheta.png',dpi=600)
                             
-#                        plt.figure(5)
-#    #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
-#    #                    graph1 = plt.plot(X,Y,'o')                    
-#                        graph1 = plt.plot(X,Y,'o')#,label='Pontos p/ 'r'$\theta_1 = 2$ e $\theta_2 = 10$')
-#    #                    graph1 = plt.plot(self.fit_x_points,self.fitted_plot)#, label ='Reta de ajuste')
-#                        plt.xlabel('Sinal / tangente')
-#                        plt.ylabel('Sinal / seno')
-#    #                    plt.legend()
-#        #                plt.show()
-##                        plt.savefig('linear2.png')
-#        
+                        print(Y)
+                        print(X)
+
+                        plt.figure(5)
+    #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
+    #                    graph1 = plt.plot(X,Y,'o')                    
+                        graph1 = plt.plot(X,Y,'o')#,label='Pontos p/ 'r'$\theta_1 = 2$ e $\theta_2 = 10$')
+    #                    graph1 = plt.plot(self.fit_x_points,self.fitted_plot)#, label ='Reta de ajuste')
+                        plt.xlabel('Sinal / tangente')
+                        plt.ylabel('Sinal / seno')
+    #                    plt.legend()
+        #                plt.show()
+#                        plt.savefig('linear2.png')
+        
 #                        plt.figure(a)
 #                        plt.axvline(x=15, color='g', linestyle='-')
 #                        plt.plot(SNR_list,self.difference_list,'o',c='#ED8F19',markeredgecolor='black',markeredgewidth=0.5)

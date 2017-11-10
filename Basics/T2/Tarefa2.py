@@ -27,10 +27,12 @@ B_0 = 1 # in Tesla
 
 #Initial Magnetization
 M_1 = rho*(gamma**2)*(hbar**2)*B_0/(4*k*Temp)
+M_1 = 1
 M_2 = 1.0*M_1
 
 omega_1 = 2*pi*10.0*10**1
 omega_2 = 2*pi*30.0*10**1
+
 
 T_1 = 15.0*10**-3
 T_2 = 50.0*10**-3
@@ -48,28 +50,28 @@ SIL_2 = M_2 * (np.cos(omega_2 * t) + 1j*np.sin(omega_2 * t)) * np.exp(-t/T_2)
 
 SIL_3 = SIL_2 + SIL_1
 
-#plt.figure(1)
-#plt.plot(t,SIL_1,label="SIL-1")
-#plt.plot(t,SIL_2,label="SIL-2")
-#plt.legend()
-#plt.xlabel("Time [seconds]")
-#plt.ylabel("SIL")
-#pylab.savefig('SIL.png',dpi=600)
-#
-#plt.figure(2)
-#plt.plot(t,SIL_3,label="SIL1 + SIL2")
-#plt.legend()
-#plt.xlabel("Time [seconds]")
-#plt.ylabel("SIL")
-#pylab.savefig('SIL1+2.png',dpi=600)
+plt.figure(1)
+plt.plot(t,SIL_1,label="SIL1")
+plt.plot(t,SIL_2,label="SIL2")
+plt.legend()
+plt.xlabel("Tempo [segundos]")
+plt.ylabel("SIL")
+pylab.savefig('SIL.png',dpi=600)
+
+plt.figure(2)
+plt.plot(t,SIL_3,label="SIL1 + SIL2")
+plt.legend()
+plt.xlabel("Tempo [segundos]")
+plt.ylabel("SIL")
+pylab.savefig('SIL1+2.png',dpi=600)
 
 freq = np.fft.fftfreq(t.size,dt)
 Fourier_transform_SIL3 = np.fft.fft(SIL_3)
 
 plt.figure(3)
-plt.plot(freq,Fourier_transform_SIL3,label="SIL3 FT")
+plt.plot(freq,Fourier_transform_SIL3,label="TF(SIL1+SIL2)")
 plt.legend()
-plt.axis([-omega_1/2,omega_1,-0.05,0.3])
-plt.xlabel("Frequency [Hertz]")
-plt.ylabel("SIL Fourier Transform")
-pylab.savefig('SIL3_FT.png',dpi=600)
+plt.axis([-omega_1/4,omega_1*(5/6),-0.05,50000])
+plt.xlabel("Frequência [Hertz]")
+plt.ylabel("Transformada de Fourier")
+pylab.savefig('FTSIL.png',dpi=600)

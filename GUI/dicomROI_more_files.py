@@ -415,10 +415,10 @@ class InteractiveCanvas(Frame):
                 file_path = os.path.join(dcm_folder[n], dcm_files[i]) # path of the file whose index match user input
                 if os.path.isfile(file_path):
                     dcm_read = dicom.read_file(file_path)  # read file user wants
-                    # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0]) / rescale_slope[self.user_echo_time_index][0]
-                    # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.which_folder][0]) / rescale_slope[self.which_folder][0]
+                        # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0]) / rescale_slope[self.user_echo_time_index][0]
+                    dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.which_folder][0]) / rescale_slope[self.which_folder][0]
                     # dcm_pixels = dcm_pixels/np.max(dcm_pixels)
-                    dcm_pixels = dcm_read.pixel_array
+                    # dcm_pixels = dcm_read.pixel_array
                     self.dcm_all_echoes.append(dcm_pixels)  # extract pixel values
 
                 self.which_folder += 1    # used as index to select the right rescaling for the pixel array
@@ -512,8 +512,8 @@ class Plot():
         # print(self.echoes)
         # print(np.sin(self.echoes*np.pi/180))
         # print(np.tan(self.echoes*np.pi/180))
-        # print('Avg/Sin = {0}'.format(self.average_by_sin))
-        # print('Avg/Tan = {0}'.format(self.average_by_tan))
+        print('Avg/Sin = {0}'.format(self.average_by_sin))
+        print('Avg/Tan = {0}'.format(self.average_by_tan))
 
         # print('Average @ 2 degrees = {0:.2e}'.format(self.average[0]))
         # print('StDev   @ 2 degrees = {0:.2e}'.format(self.stdev[0]))
@@ -527,7 +527,7 @@ class Plot():
 
         a=(self.average_by_sin[1] - self.average_by_sin[0]) / (self.average_by_tan[1] - self.average_by_tan[0])
         print('Angular coeff. = {0:.7f}'.format(a))
-        print('T1_calculated  = {0:.5e}\n'.format(-self.TR/np.log(a)))
+        print('T1_calculated  = {0:.3e}\n'.format(-self.TR/np.log(a)))
 
     def residual(self,params, x, data):
         # Parameters to be fitted must be declared below
@@ -574,7 +574,7 @@ class Plot():
         b = self.fitted_amplitude*np.exp(-self.TE/self.T2)*(1-E1)
         # print('b = {0:.2e}'.format(b))
         # print('amplitude fitted = {0:.2e}'.format(self.fitted_amplitude))
-        print('\nT1 fitted = {0:.2e}'.format(self.fitted_T1))
+        print('\nT1 fitted = {0:.3e}'.format(self.fitted_T1))
         # print('TR = {0:.2e}'.format(self.TR))
         # print('E1 = {0:.2e}'.format(E1))
 
