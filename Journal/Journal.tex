@@ -64,6 +64,8 @@
 \usepackage[parfill]{parskip} %Include empty line between paragraphs
 
 
+\usepackage[round]{natbib} %Citação (Nome,Ano). Deve usar \bibliographystyle{plainnat}
+
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Command to make the lines in the title page
 \setlength\parindent{0pt} % Removes all indentation from paragraphs
 
@@ -75,6 +77,7 @@
 \newexperiment{data}{Análise de Dados}
 \newexperiment{gui}{Programação da GUI}
 \newexperiment{writing}{Escrita do TCC}
+\newexperiment{reading}{Leitura de artigo}
 \newexperiment{table}{This shows a sample table}
 %\newexperiment{shorthand}{Description of the experiment}
 
@@ -253,11 +256,44 @@ Simulei o sinal $\rho$ utilizando o tempo de relaxação da gordura $T1_{gordura
 
 Após realizar a análise, observei que o fator era maior que 1 para alguns pacientes e menor para outros. Decidimos investigar mais a fundo. Fato é que, ao cancular S/sin e S/tan para todos os pacientes e obter o coeficiente angular após a linearização, temos que ALGUNS pacientes apresentam valores bons (S2 > S10). Em outros, o comportamento bom aparece apenas em uma região ou outra, enquanto é problemático nas demais.
 
-\label{Sexta, 10 de novembro de 2017}
+\labday{Sexta, 10 de novembro de 2017}
 
 \experiment{data}
 
 Mostrei os valores de T1 obtidos pelo Excel para o Fernando. Ele entendeu que o problema está nos valores dos ângulos utilizados e disse que irá pensar no que poderemos fazer. Enquanto isso, continuei a escrever o TCC.
+
+\labday{Terça, 14 de novembro de 2017}
+
+\experiment{writing}
+
+Continuei a escrever o TCC nos últimos dias. Estou finalizando uma primeira versão da introdução teórica. Pretendo acabá-la hoje e esperar alguns dias para voltar, ler tudo novamente e realizar os ajustes necessários e escrever pedaços que faltaram. Até o momento, tenho 27 páginas. Creio que é o suficiente. Contando que haverão muitos gráficos sobre a análise e sobre o código a serem adicionados, acredito que o trabalho poderá alcançar por volta de 50 páginas sem mais dificuldades. Após escrever essa primeira versão, vou passar tudo para o padrão ABNT.
+
+
+\labday{Quinta, 23 de novembro de 2017}
+
+Estive ocupado na última semana com tarefas da EnFi. Consegui escrever um pouco mais da introdução teórica. Vou aproveitar para ler alguns artigos durante a tarde de hoje para descobrir como resolver nossos problemas de análise.
+
+
+\experiment{reading}
+
+
+O artigo de \citet{dathe2011} parece fornecer uma outra forma de lidar com a equação de Ernst no caso FLASH. A matemática não é simples e o artigo não é fácil de acompanhar. Ainda não consegui extrair exatamente como podemos utilizar o método apresentado para nossa vantagem.
+
+
+\labday{Terça, 28 de novembro de 2017}
+
+\experiment{reading}
+
+O artigo de Heule 2017 cita o método de Parker 2001 (adicionar artigos depois). A razão entre os sinais nos dois pontos fornece uma função de T1 pois as constantes $\rho_0$ se cancelam. Tenho que tentar isolar $T_1$ nessa função e plotá-la a partir dos valores de $S_10$ e $S_2$ que obtive na planilha de Excel. Assim, podemos analisar a dispersão dos valores de $T_1$ e dos valores de $S_{10}$.
+
+\experiment{data}
+
+Na planilha do excel, vimos que o rescaling parece estar funcionando como esperando, pois um plot de $S_{10}$ vs $S_2$ cria uma linha (com exceção de alguns pontos ruins) cujo coeficiente angular é aproximadamente 4.75, que deve ser o fato entre a amplitude de cada um dos pontos. A distribuição dos pontos também parece ok a partir da análise dos histogramas.
+
+Após isolar T1 na fórmula apresentada por Parker 2001 e utilizar os valores do sinal da planilha de Excel, obtive EXATAMENTE os mesmos valores para T1 que foram obtidos pelo método da linearização. Acredito que isso confirme que o problema não está apenas no método, mas sim na forma como os dados foram adquiridos.
+
+
+
 
 %----------------------------------------------------------------------------------------
 %	FORMULAE
@@ -277,5 +313,8 @@ $a^2 + b^2 = c^2$\\ \\
 %Formula
 
 %----------------------------------------------------------------------------------------
+
+\bibliographystyle{plainnat} %Usar apenas em citação não numérica. Use \citet{} para: NOME (ANO). Use \citep{} para: (NOME, ANO)
+\bibliography{A_bibliografia}
 
 \end{document}

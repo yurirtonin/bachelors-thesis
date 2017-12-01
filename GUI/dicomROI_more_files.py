@@ -505,6 +505,11 @@ class Plot():
         self.echoes = np.array(np.unique(self.slice_and_echo[:,1])) # clean array to have only unique angle values
         self.average_by_sin = np.divide(self.average,np.sin(self.echoes*np.pi/180))
         self.average_by_tan = np.divide(self.average,np.tan(self.echoes*np.pi/180))
+
+        # teste. testando aproximação do eq de Ernst para o caso theta << thetaErnst
+        # self.average_by_sin = self.average
+        # self.average_by_tan = np.sin(self.echoes * np.pi / 180)
+
         self.create_plot()
 
         # print(np.sin(self.echoes*np.pi/180))

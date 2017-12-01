@@ -8,6 +8,8 @@ Created on Thu Sep 21 12:10:29 2017
 import numpy as np
 import matplotlib.pyplot as plt
 from lmfit import minimize, Parameters # lmfit is the package for fitting
+from scipy.optimize import curve_fit
+
 
 #from matplotlib import rc
 #rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
@@ -33,8 +35,9 @@ class main():
         self.T2 = 72*10**-3
         #self.T1 = 678*10**-3
     
-        self.croped_pixel_array = np.loadtxt('croped_pixel_array.txt')
+        self.croped_pixel_array = np.loadtxt('croped_pixel_array21.txt')
         self.croped_pixel_array = np.ravel(self.croped_pixel_array) #transform 2D to 1D array
+        print(np.size(self.croped_pixel_array))
     
     def residual(self,params, x, data):
     # Parameters to be fitted must be declared below
@@ -91,7 +94,7 @@ class main():
                     SNR_list.append(SNR)
                     StDev = rho[self.index0]/SNR
                     StDev = rho[1]/SNR
-                    noise = np.random.normal(0,StDev,self.n_points)
+                    noise = np.random.normal(0,StDev/3,self.n_points)
                     rho = rho + noise 
                                        
 #            Linearization Y = alpha*X + beta for theta = 2 and 10 degrees
@@ -159,7 +162,20 @@ class main():
         print('# de pontos ignorados = {0:.0f}'.format(self.counter))
         self.difference_list = np.asarray(self.difference_list)
         nBins = 100
+        
+        def gaus(x,a,x0,sigma):
+            return a*np.exp(-(x-x0)**2/(2*sigma**2))
+       
+        x = np.linspace(1,100,100)
+        mean = 50
+        sigma = 20
+        amp=100
+        poptdata,pcovdata = curve_fit(gaus,x,np.histogram(self.croped_pixel_array,bins=nBins)[0],p0=[amp,mean,sigma])
+        print(poptdata)
 
+        poptsimulation,pcovsimulation = curve_fit(gaus,x,np.histogram(self.angle1_distribution,bins=nBins)[0],p0=[amp,mean,sigma])
+        print(poptsimulation)
+        
         def StandardizeAndPlot(distribution,bins,label):
             newDistribution = (distribution-np.mean(distribution))/np.std(distribution)
             plt.hist(newDistribution,bins=bins,alpha=0.5,label=label)                  
@@ -169,7 +185,7 @@ class main():
         plt.axvline(x=-1, color='r', linestyle='-')
         StandardizeAndPlot(self.croped_pixel_array,nBins,'Data')
         StandardizeAndPlot(self.angle1_distribution,nBins,'Smaller Angle')
-        StandardizeAndPlot(self.angle2_distribution,nBins,'Bigger Angle')
+#        StandardizeAndPlot(self.angle2_distribution,nBins,'Bigger Angle')
         plt.legend()
 
         def plotHistogramAsPoints(arrayToPlot,bins,label):
@@ -178,11 +194,19 @@ class main():
         plt.figure(4)
         plotHistogramAsPoints(self.croped_pixel_array,nBins,'Data')
         plotHistogramAsPoints(self.angle1_distribution,nBins,'Smaller Angle')
-        plotHistogramAsPoints(self.angle2_distribution,nBins,'Bigger Angle')
+#        plotHistogramAsPoints(self.angle2_distribution,nBins,'Bigger Angle')
         plt.legend()
                             
-        plt.figure(5)
-        plt.hist((self.difference_list),bins=nBins,label="Dif",alpha=0.5)
+#        plt.figure(5)
+#        plt.hist((self.difference_list),bins=nBins,label="Dif",alpha=0.5)
+#        plt.legend()
+        
+        plt.figure(6)
+        plt.plot((self.croped_pixel_array-np.mean(self.croped_pixel_array))/np.amax(self.croped_pixel_array),'o',alpha=0.2,label="Data")
+        plt.legend()
+        
+        plt.figure(7)
+        plt.plot(self.angle1_distribution-np.mean(self.angle1_distribution),'o',alpha=0.2,label="Simulation")
         plt.legend()
 
 

@@ -11,4 +11,12 @@
 \contentsline {experiment}{\numberline {2}An\IeC {\'a}lise de Dados}{6}{experiment.4.2}
 \contentsline {chapter}{\nonumberline Quinta, 9 de novembro de 2017}{7}{chapter*.7}
 \contentsline {experiment}{\numberline {1}An\IeC {\'a}lise de Dados}{7}{experiment.5.1}
-\contentsline {experiment}{\numberline {2}An\IeC {\'a}lise de Dados}{7}{experiment.5.2}
+\contentsline {chapter}{\nonumberline Sexta, 10 de novembro de 2017}{8}{chapter*.8}
+\contentsline {experiment}{\numberline {1}An\IeC {\'a}lise de Dados}{8}{experiment.6.1}
+\contentsline {chapter}{\nonumberline Ter\IeC {\c c}a, 14 de novembro de 2017}{9}{chapter*.9}
+\contentsline {experiment}{\numberline {1}Escrita do TCC}{9}{experiment.7.1}
+\contentsline {chapter}{\nonumberline Quinta, 23 de novembro de 2017}{10}{chapter*.10}
+\contentsline {experiment}{\numberline {1}Leitura de artigo}{10}{experiment.8.1}
+\contentsline {chapter}{\nonumberline Ter\IeC {\c c}a, 28 de novembro de 2017}{11}{chapter*.11}
+\contentsline {experiment}{\numberline {1}Leitura de artigo}{11}{experiment.9.1}
+\contentsline {experiment}{\numberline {2}An\IeC {\'a}lise de Dados}{11}{experiment.9.2}

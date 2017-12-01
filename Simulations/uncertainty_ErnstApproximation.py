@@ -17,7 +17,7 @@ class main():
     
     def __init__(self):
         
-        self.n_points = 90
+        self.n_points = 50
         self.theta = np.linspace(1,self.n_points,self.n_points)
         self.sin_theta = np.sin(self.theta*np.pi/180)
         self.tan_theta = np.tan(self.theta*np.pi/180)
@@ -30,8 +30,7 @@ class main():
 
         train = 43
         self.TR = 3.78*10**-3*train
-#        self.TE = 1.813*10**-3 
-        self.TE = 1.78*10**-3 
+        self.TE = 1.813*10**-3 
         self.T2 = 72*10**-3
         #self.T1 = 678*10**-3
     
@@ -48,8 +47,11 @@ class main():
         
     def model_equation(self,a,TE,TR,T1,T2,x): # x is the flip angle
         E1 = np.exp(-TR/T1)
-        b = a*(1-E1)#*np.exp(-TE/T2)
-        return E1*x+b
+#        print(E1)
+#        print(x**2*E1/(2*(1-E1)))
+#        print(x**2*E1)
+#        print((2*(1-E1)))
+        return a*x/(1+E1*x**2/(2*(1-E1)))
     
     def calculations(self):
             
@@ -67,13 +69,12 @@ class main():
         for a in range(0,1):  
             if a == 0: 
                 T1 = 613.9*10**-3 # pre contrast 
-#                T1 = 10000*10**-3 # pre contrast 
             else:
                 T1 = 200.3*10**-3 # pro contrast           
             
 #                Besa values: T1 = 613.9 ms (pre) and T1 = 200.3 ms (post)
 
-            for j in range(15,16): #vary SNR
+            for j in range(1,2): #vary SNR
                 for i in range(1,2): #multiple runs with same T1
 #                        T1 = 700*10**-3
                     
@@ -84,13 +85,7 @@ class main():
                     E1 = np.exp(-self.TR/T1)
                     
                     thetaErnst = np.arccos(E1)*180/np.pi
-                    print('Ernst_angle = {0:.2f}'.format(thetaErnst))
-                    
-                    print(np.sin(self.index1*np.pi/180))
-                    print((self.index1*np.pi/180))
-                    print(np.abs(np.sin(self.index1*np.pi/180)-(self.index1*np.pi/180))/(self.index1*np.pi/180))
-
-
+    #                print('Ernst_angle = {0:.2f}'.format(thetaErnst))
                     
                     ampIdeal = 3 / (np.sin(2*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(2*np.pi/180))) 
                     rho0 = ampIdeal
@@ -99,15 +94,12 @@ class main():
                     T12 = 1000*10**-3
                     E12 = np.exp(-self.TR/T12)
                     rho2 = rho0 * np.sin(self.theta*np.pi/180)*(1-E12)*np.exp(-self.TE/self.T2)/(1-E12*np.cos(self.theta*np.pi/180))
+                        
 
-                    
+                    x = (self.theta*np.pi/180)                    
+#                    rho = rho0 * x/(1+E1*x**2/(2*(1-E1)))
                     rho = rho0 * np.sin(self.theta*np.pi/180)*(1-E1)*np.exp(-self.TE/self.T2)/(1-E1*np.cos(self.theta*np.pi/180))
                     rho_nonoise = rho
-                    print(rho_nonoise[self.index0])
-                    print(rho_nonoise[self.index1])
-                    print(rho_nonoise[self.index1]/rho_nonoise[self.index0])
-
-
 #                   rhoapp = rho0 * theta / (1+0.5*E1*theta**2/(1-E1))
         
 ##   Find best angles according to Deoni 2003:
@@ -128,7 +120,7 @@ class main():
                     SNR_list.append(SNR)
                     StDev = rho[self.index0]/SNR
                     noise = np.random.normal(0,StDev,self.n_points)
-                    rho = rho + noise 
+#                    rho = rho + noise 
     #                print('\nNoise is at most the Standard Deviation = {0:.5f}'.format(StDev))
                     
                     rho_sin = np.divide(rho,self.sin_theta)
@@ -138,31 +130,41 @@ class main():
                     Y = np.empty(2)
                     X = np.empty(2)
                 
-                    Y[0] = rho[self.index0]/self.sin_theta[self.index0]
-                    Y[1] = rho[self.index1]/self.sin_theta[self.index1]
-                    X[0] = rho[self.index0]/self.tan_theta[self.index0]
-                    X[1] = rho[self.index1]/self.tan_theta[self.index1]
-#                        Y[2] = rho[self.index2]/self.sin_theta[self.index2]
-#                        X[2] = rho[self.index2]/self.tan_theta[self.index2] 
-#                        Y[3] = rho[self.index3]/self.sin_theta[self.index3]
-#                        X[3] = rho[self.index3]/self.tan_theta[self.index3] 
-#                        Y[4] = rho[self.index4]/self.sin_theta[self.index4]
-#                        X[4] = rho[self.index4]/self.tan_theta[self.index4]  
+                    Y[0] = rho[self.index0]
+                    Y[1] = rho[self.index1]
+                    X[0] = (self.index0*np.pi/180)  
+                    X[1] = (self.index1*np.pi/180)           
+                
+                    print(Y[0])
+                    print(X[0])
+                    print(Y[1])
+                    print(X[1])
+
+#                    Y[0] = rho[self.index0]/self.sin_theta[self.index0]
+#                    Y[1] = rho[self.index1]/self.sin_theta[self.index1]
+#                    X[0] = rho[self.index0]/self.tan_theta[self.index0]
+#                    X[1] = rho[self.index1]/self.tan_theta[self.index1]
+#                    Y[2] = rho[self.index2]/self.sin_theta[self.index2]
+#                    X[2] = rho[self.index2]/self.tan_theta[self.index2] 
+#                    Y[3] = rho[self.index3]/self.sin_theta[self.index3]
+#                    X[3] = rho[self.index3]/self.tan_theta[self.index3] 
+#                    Y[4] = rho[self.index4]/self.sin_theta[self.index4]
+#                    X[4] = rho[self.index4]/self.tan_theta[self.index4]  
     
                     self.X0_array = np.append(self.X0_array,X[0])
                     self.X1_array = np.append(self.X1_array,X[1])
                     self.Y0_array = np.append(self.Y0_array,Y[0])
                     self.Y1_array = np.append(self.Y1_array,Y[1])
       
-                    coef_angular = (Y[0]-Y[1])/(X[0]-X[1])
-    #                print('\nHand angular coef = {0:.6e}'.format(coef_angular))
+                    coef_angular = (Y[1]-Y[0])/(X[1]-X[0])
+                    print('\nHand angular coef = {0:.6e}'.format(coef_angular))
                     if coef_angular < 0:
                         print('\nA negative angular coefficient was calculated! This indicates noise that is too high!')
                     T1_hand = - self.TR/np.log(coef_angular)
                     
                     params = Parameters()
                     params.add('amplitude', value=100) #value is the initial value for fitting
-                    params.add('T1', value = 0.05, min = 0, max=2)
+                    params.add('T1', value = 0.5, min = 0, max=1)
                 
                     fitting = minimize(self.residual, params, args=(X, Y))
                     if fitting.success: 
@@ -171,8 +173,8 @@ class main():
                         self.fitted_amplitude = fitting.params['amplitude'].value
                         self.fitted_T1 = fitting.params['T1'].value
     #                    print('    Fitted Amplitude = {0:.2e}'.format(self.fitted_amplitude))
-#                        print('    Fitted T1        = {0:.2e}'.format(self.fitted_T1))
-    #                    print('    Hand T1          = {0:.2e}'.format(T1_hand))
+                        print('    Fitted T1        = {0:.2e}'.format(self.fitted_T1))
+                        print('    Hand T1          = {0:.2e}'.format(T1_hand))
         
                         if np.abs(self.fitted_T1) > 100: 
                         #Fitting does not converge sometimes. It gives |T1| > 1000. We are desconsidering these points in this conditional.
@@ -189,8 +191,8 @@ class main():
                         plt.figure(4)
 #                        graph = plt.axhline(y=rho_at_best_angles, color='y', linestyle='-',label ='71\% of A maximum')
 #                        graph = plt.axvline(x=thetaErnst, color='blue', linestyle='-')
-#                        graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
-                        graph = plt.plot(self.theta,rho_nonoise,label='Signal A',linewidth=3)
+                        graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
+#                        graph = plt.plot(self.theta,rho_nonoise,label='Signal A',linewidth=3)
 #                        graph = plt.plot(self.theta,rho2,label='Signal B',linewidth=2)
     #                        graph = plt.plot(theta,rhoapp,'ro')
                         plt.xlabel('Flip angle 'r'$\theta$ [Degrees]')
@@ -198,20 +200,17 @@ class main():
 #                        plt.legend()
 #                        plt.savefig('signaltheta.png',dpi=600)
                             
-                        print(Y)
-                        print(X)
-
-                        plt.figure(5)
-    #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
-    #                    graph1 = plt.plot(X,Y,'o')                    
-                        graph1 = plt.plot(X,Y,'o')#,label='Pontos p/ 'r'$\theta_1 = 2$ e $\theta_2 = 10$')
-    #                    graph1 = plt.plot(self.fit_x_points,self.fitted_plot)#, label ='Reta de ajuste')
-                        plt.xlabel('Sinal / tangente')
-                        plt.ylabel('Sinal / seno')
-    #                    plt.legend()
-        #                plt.show()
-#                        plt.savefig('linear2.png')
-        
+#                        plt.figure(5)
+#    #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
+#    #                    graph1 = plt.plot(X,Y,'o')                    
+#                        graph1 = plt.plot(X,Y,'o')#,label='Pontos p/ 'r'$\theta_1 = 2$ e $\theta_2 = 10$')
+#    #                    graph1 = plt.plot(self.fit_x_points,self.fitted_plot)#, label ='Reta de ajuste')
+#                        plt.xlabel('Sinal / tangente')
+#                        plt.ylabel('Sinal / seno')
+#    #                    plt.legend()
+#        #                plt.show()
+##                        plt.savefig('linear2.png')
+#        
 #                        plt.figure(a)
 #                        plt.axvline(x=15, color='g', linestyle='-')
 #                        plt.plot(SNR_list,self.difference_list,'o',c='#ED8F19',markeredgecolor='black',markeredgewidth=0.5)
