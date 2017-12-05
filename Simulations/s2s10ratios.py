@@ -51,16 +51,16 @@ class equation():
 for a in range(0,1):  
 # Besa values: T1 = 613.9 ms (pre) and T1 = 200.3 ms (post)
     if a == 0: 
-        T1 = 613.9*10**-3 # pre contrast 
-#        T1 = 5000*10**-3 # pre contrast 
-
+        T1 = 400.9*10**-3 # pre contrast 
     else:
         T1 = 200.3*10**-3 # pro contrast           
     
 
     for j in range(25,26): #vary SNR
-        for i in range(1,30): #multiple runs with same T1
+        for i in range(1,50): #multiple runs with same T1
             
+            T1 = T1 + 100*10**-3 # pre contrast 
+
 #                print('\n===== // ===== // ===== // ===== // ===== // =====')
 #                print('\nT1 = {0:.2e}'.format(T1))
 #                print('TR = {0:.2e}'.format(TR))
@@ -75,12 +75,11 @@ for a in range(0,1):
             rho0 = 1
                        
             
-            
             rho = rho0 * np.sin(theta*np.pi/180)*(1-E1) /(1-E1*np.cos(theta*np.pi/180))
 #            rho = rho0 * np.sin(theta*np.pi/180)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(theta*np.pi/180))
             rho_nonoise = rho
             
-            print(rho[index1-1]/rho[index0-1])
+            ratio = rho[index1-1]/rho[index0-1]
             
             SNR = j
             SNR_list.append(SNR)
@@ -120,14 +119,22 @@ for a in range(0,1):
 #            plt.savefig('signaltheta.png',dpi=600)
                     
 
-        
-            plt.figure(a)
-            plt.axvline(x=15, color='g', linestyle='-')
-            plt.plot(SNR_list,difference_list,'o',c='#ED8F19',markeredgecolor='black',markeredgewidth=0.5)
-            plt.xlabel('SNR',fontsize=16)
-            plt.ylabel(r'$\Delta \% T_1$',fontsize=16)
-            plt.title(r'$\theta_1 = {0:.0f} \quad   \theta_2 = {1:.0f}  \quad  T_1 = {2:.0f}$ ms'.format(theta[index0-1],theta[index1-1],T1*1000),fontsize=16)
+            plt.figure(2)
+            plt.plot(T1,ratio,'o',c='#ED8F19',markeredgecolor='black',markeredgewidth=0.5)
+            plt.xlabel(r'$T_1$',fontsize=16)
+            plt.ylabel(r'$S_{10}/S_2$',fontsize=16)
+#            plt.title(r'$\theta_1 = {0:.0f} \quad   \theta_2 = {1:.0f}  \quad  T_1 = {2:.0f}$ ms'.format(theta[index0-1],theta[index1-1],T1*1000),fontsize=16)
 #            plt.savefig('uncertainty.png',dpi=600)
+
+        
+#            plt.figure(a)
+#            plt.axvline(x=15, color='g', linestyle='-')
+#            plt.plot(SNR_list,difference_list,'o',c='#ED8F19',markeredgecolor='black',markeredgewidth=0.5)
+#            plt.xlabel('SNR',fontsize=16)
+#            plt.ylabel(r'$\Delta \% T_1$',fontsize=16)
+#            plt.title(r'$\theta_1 = {0:.0f} \quad   \theta_2 = {1:.0f}  \quad  T_1 = {2:.0f}$ ms'.format(theta[index0-1],theta[index1-1],T1*1000),fontsize=16)
+##            plt.savefig('uncertainty.png',dpi=600)
+
 
 
 

@@ -20,3 +20,5 @@
 \contentsline {chapter}{\nonumberline Ter\IeC {\c c}a, 28 de novembro de 2017}{11}{chapter*.11}
 \contentsline {experiment}{\numberline {1}Leitura de artigo}{11}{experiment.9.1}
 \contentsline {experiment}{\numberline {2}An\IeC {\'a}lise de Dados}{11}{experiment.9.2}
+\contentsline {chapter}{\nonumberline Segunda, 4 de dezembro de 2017}{12}{chapter*.12}
+\contentsline {experiment}{\numberline {1}An\IeC {\'a}lise de Dados}{12}{experiment.10.1}
