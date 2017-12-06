@@ -16,7 +16,7 @@ import scipy as sp
 #rc('text', usetex=True) 
  
 
-n_points = 20
+n_points = 90
 theta = np.linspace(1,n_points,n_points)
 
 index0  = 2
@@ -51,15 +51,15 @@ class equation():
 for a in range(0,1):  
 # Besa values: T1 = 613.9 ms (pre) and T1 = 200.3 ms (post)
     if a == 0: 
-        T1 = 400.9*10**-3 # pre contrast 
+        T1 = 100*10**-3 # pre contrast 
     else:
         T1 = 200.3*10**-3 # pro contrast           
     
 
     for j in range(25,26): #vary SNR
-        for i in range(1,50): #multiple runs with same T1
+        for i in range(1,2): #multiple runs with same T1
             
-            T1 = T1 + 100*10**-3 # pre contrast 
+#            T1 = T1 + 100*10**-3 # pre contrast 
 
 #                print('\n===== // ===== // ===== // ===== // ===== // =====')
 #                print('\nT1 = {0:.2e}'.format(T1))

@@ -385,7 +385,7 @@ class InteractiveCanvas(Frame):
         self.canvas.coords(self.rect, self.start_x, self.start_y, curX, curY)
 
         self.coordenadas = self.canvas.coords(self.rect)
-        print(self.coordenadas)
+        # print(self.coordenadas)
 
     def on_button_release(self, event):
         pass
