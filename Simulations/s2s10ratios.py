@@ -51,14 +51,14 @@ class equation():
 for a in range(0,1):  
 # Besa values: T1 = 613.9 ms (pre) and T1 = 200.3 ms (post)
     if a == 0: 
-        T1 = 100*10**-3 # pre contrast 
+        T1 = 300*10**-3 # pre contrast 
     else:
         T1 = 200.3*10**-3 # pro contrast           
     
 
     for j in range(25,26): #vary SNR
         for i in range(1,2): #multiple runs with same T1
-            
+
 #            T1 = T1 + 100*10**-3 # pre contrast 
 
 #                print('\n===== // ===== // ===== // ===== // ===== // =====')
@@ -80,12 +80,13 @@ for a in range(0,1):
             rho_nonoise = rho
             
             ratio = rho[index1-1]/rho[index0-1]
+            print(ratio)
             
             SNR = j
             SNR_list.append(SNR)
             StDev = rho[index0]/SNR
             noise = np.random.normal(0,StDev,n_points)
-            rho = rho + noise 
+#            rho = rho + noise 
                    
             S1 = rho[index0-1]
             S2 = rho[index1-1]

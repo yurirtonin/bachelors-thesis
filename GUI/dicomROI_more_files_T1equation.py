@@ -38,22 +38,22 @@ class SecondaryFrames(Frame):
 
     def __init__(self, parent):
 
-        self.top_frame = Frame(parent)
-        self.left_frame = Frame(parent, width=400)
-        self.right_frame = Frame(parent, width=500)
+        self.top_frame    = Frame(parent)
+        self.left_frame   = Frame(parent, width=400)
+        self.right_frame  = Frame(parent, width=500)
         self.right_frame2 = Frame(parent)
 
         self.horizontal_line = ttk.Separator(parent, orient=HORIZONTAL)
-        self.vertical_line = ttk.Separator(parent, orient=VERTICAL)
+        self.vertical_line   = ttk.Separator(parent, orient=VERTICAL)
 
 
 class SearchFolder(Frame):
 
-    # This class is responsible for selecting the folders where acquisition files area and, after that is done, placing
-    # the scales and canvas used for selecting a specific image and drawing a region of interest (ROI) on it. The last
-    # action performed by this class is to select the ROI through a button, so that data is exported to a plot.
+    # This class is responsible for selecting the folders where acquisition files are and, after that, placing
+    # the scales and canvas used for selecting a specific image and drawing a region of interest (ROI) on top it.
+    # The last action performed by this class is to select the ROI through a button, so that data is exported to a plot.
 
-    def __init__(self,parent,left_frame,right_frame,right_frame2,first_run,first_plot):
+    def __init__(self, parent, left_frame, right_frame, right_frame2, first_run, first_plot):
 
         self.first_run     = first_run
         self.first_plot    = first_plot
@@ -204,13 +204,8 @@ class SearchFolder(Frame):
         print('Rescale2:  A = {0:.2f}     B = {1:.1f} '.format(self.rescale_slope[0][0],self.rescale_intercept[0][0]))
         print('Rescale10: A = {0:.2f}     B = {1:.1f} '.format(self.rescale_slope[1][0],self.rescale_intercept[1][0]))
 
-        # print(dcm_read.dir())  # All Dicom tag available
-
-        # print('Acquisition time = {0:.0f}'.format(self.acquisition_time[0][1]))
         print('Echo Train Length = {0:.0f}'.format(self.gradient_echo_train_length[0][0]))
         self.total_repetition_time = np.multiply(self.repetition_time,self.gradient_echo_train_length)
-        # self.total_repetition_time = np.multiply(self.repetition_time,1)
-        # print(self.total_repetition_time)
 
         print('Number of averages = {0:.0f}'.format(self.number_averages))
 
@@ -224,7 +219,7 @@ class SearchFolder(Frame):
 
         print('Echo time       = {0:.2e} seconds'.format(self.TE))
         print('Repetition time = {0:.2e} seconds'.format(self.TR))
-        print('Ernst angle     = {0:.1f} Degrees'.format(self.Ernst_angle))
+        # print('Ernst angle     = {0:.1f} Degrees'.format(self.Ernst_angle))
 
         self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # Makes a flat list (remove separation of interior lists, creating one huge list)
 
@@ -287,10 +282,10 @@ class SearchFolder(Frame):
 
 class Scales(Frame):
 
-# This class simply declares the characteristics of the Scales used for selecting images. They are declared here, but
-# only created (packed) in the GUI at SearchFolder class, inside of place_scales_and_canvas method.
+    # This class simply declares the characteristics of the Scales used for selecting images. They are declared here,
+    # but only created (packed) in the GUI at SearchFolder class, inside of place_scales_and_canvas method.
 
-    def __init__(self,parent,label_text,initial_value,final_value,*args):
+    def __init__(self, parent, label_text, initial_value, final_value, *args):
         self.parent        = parent
         self.bar_length    = 200
         self.label_text    = label_text
@@ -321,16 +316,16 @@ class Scales(Frame):
 
 class InteractiveCanvas(Frame):
 
-# In this class all the functionality for displaying the proper image on canvas and drawing the ROI on top of the imaged
-# is created. There is also a function that returns the ROI coordinates.
+    # In this class all the functionality for displaying the proper image on canvas and drawing the ROI on top of the
+    # image is created. There is also a function that returns the ROI coordinates.
 
     def __init__(self,parent):
         Frame.__init__(self,parent)
         self.x = self.y = 0
         self.canvas = Canvas(self,width=300,height = 300,bg="red", cursor="cross")
 
-        self.sbarv=Scrollbar(self,orient=VERTICAL)
-        self.sbarh=Scrollbar(self,orient=HORIZONTAL)
+        self.sbarv = Scrollbar(self,orient=VERTICAL)
+        self.sbarh = Scrollbar(self,orient=HORIZONTAL)
         self.sbarv.config(command=self.canvas.yview)
         self.sbarh.config(command=self.canvas.xview)
 
@@ -381,11 +376,12 @@ class InteractiveCanvas(Frame):
         elif event.y < 0.1*h:
             self.canvas.yview_scroll(-1, 'units')
 
-        # expand rectangle as you drag the mouse
+        # Expand rectangle as you drag the mouse
         self.canvas.coords(self.rect, self.start_x, self.start_y, curX, curY)
 
-        self.coordenadas = self.canvas.coords(self.rect)
-        # print(self.coordenadas)
+        self.coordenadas = self.canvas.coords(self.rect) #4 element array with  ROI coordiantes
+
+        # print(self.coordenadas) # Print ROI
 
     def on_button_release(self, event):
         pass
@@ -406,16 +402,19 @@ class InteractiveCanvas(Frame):
 
         for i in indexes:  # Go through index values. Check and record those in which echo time (element) matches user input
 
-            #get array of arrays with pixel values for all echoes of a slice
+            # Get array of arrays with pixel values for all echoes of a slice
             self.which_folder = 0  # used as index to select the right rescaling for the pixel array
+
             for n in range(len(dcm_folder)): #the range of elements of dcm_folder should match the number of different flip angles/echo times
+
                 # Will evaluate if the i_th file dcm_files[i] exists for the folder we have.
                 # It will match for 1 folder only. When it does, isfile returns True, and we
                 # record the pixel array for that flip_angle/echo_time in dcm_all_echoes
+
                 file_path = os.path.join(dcm_folder[n], dcm_files[i]) # path of the file whose index match user input
+
                 if os.path.isfile(file_path):
                     dcm_read = dicom.read_file(file_path)  # read file user wants
-                        # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.user_echo_time_index][0]) / rescale_slope[self.user_echo_time_index][0]
                     # dcm_pixels = (dcm_read.pixel_array - rescale_intercept[self.which_folder][0]) / rescale_slope[self.which_folder][0]
                     # dcm_pixels = dcm_pixels/np.max(dcm_pixels)
                     dcm_pixels = dcm_read.pixel_array
@@ -429,8 +428,9 @@ class InteractiveCanvas(Frame):
         file_path = os.path.join(dcm_folder[self.user_echo_time_index], dcm_files[index])  # path of the file whose index match user input
         dcm_read = dicom.read_file(file_path)  # read file user wants
 
-        dcm_pixels = dcm_read.pixel_array      #NOT USING RESCALE HERE BECAUSE THIS IS USED FOR USER VISUALIZATION ONLY. Rescaling is done only in the previous for loop, since that data is the one used for plotting/fitting
-        dcm_pixel_values = dcm_pixels  # extract pixel values
+        dcm_pixels = dcm_read.pixel_array      # NOT USING RESCALE HERE BECAUSE THIS IS USED FOR USER VISUALIZATION ONLY. Rescaling is done only in the previous for loop, since that data is the one used for plotting/fitting
+        dcm_pixel_values = dcm_pixels          # Extract pixel values
+
         # dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
         dcm_image = Image.fromarray(dcm_pixel_values)                       # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
 
@@ -439,7 +439,7 @@ class InteractiveCanvas(Frame):
         imagem = Label(left_frame, image='')  # Create empty image to keep a reference of image. That way, GarbageCollector won't throw away image (http://effbot.org/pyfaq/why-do-my-tkinter-images-not-place_interactive_canvasear.htm)
         imagem.configure(image=new_tk_image)  # Used to keep reference (go to imagem declaration to understand)
         imagem.image = new_tk_image           # Used to keep reference (go to imagem declaration to understand)
-        interactive_canvas.canvas.itemconfig(interactive_canvas.image_on_canvas, image=new_tk_image)  # update image on canvas
+        interactive_canvas.canvas.itemconfig(interactive_canvas.image_on_canvas, image=new_tk_image)  # Update image on canvas
 
         return self.dcm_all_echoes
 
@@ -500,34 +500,27 @@ class Plot():
             if i == 0:  np.savetxt('croped_pixel_array2.txt',croped_pixel_array,fmt='%10.10f')
             else: np.savetxt('croped_pixel_array10.txt',croped_pixel_array,fmt='%10.10f')
 
-        print('Average below')
-        print(self.average)
         print(self.average[1]/self.average[0])
-        self.echoes = np.array(np.unique(self.slice_and_echo[:,1])) # clean array to have only unique angle values
+        print(self.average[0])
+        print(self.average[1])
+
+
+
+        self.echoes = np.array(np.unique(self.slice_and_echo[:,1])) # Clean array to have only unique echo/flipAngle values
+
         self.average_by_sin = np.divide(self.average,np.sin(self.echoes*np.pi/180))
         self.average_by_tan = np.divide(self.average,np.tan(self.echoes*np.pi/180))
 
-        # teste. testando aproximação do eq de Ernst para o caso theta << thetaErnst
-        # self.average_by_sin = self.average
-        # self.average_by_tan = np.sin(self.echoes * np.pi / 180)
-
         self.create_plot()
 
-        # print(np.sin(self.echoes*np.pi/180))
-        # print(self.echoes)
-        # print(np.sin(self.echoes*np.pi/180))
-        # print(np.tan(self.echoes*np.pi/180))
-        # print('Avg/Sin = {0}'.format(self.average_by_sin))
-        # print('Avg/Tan = {0}'.format(self.average_by_tan))
+        self.SNR2 = self.average[0]/self.stdev[0]
+        self.SNR10 = self.average[1]/self.stdev[1]
 
         # print('Average @ 2 degrees = {0:.2e}'.format(self.average[0]))
         # print('StDev   @ 2 degrees = {0:.2e}'.format(self.stdev[0]))
-        self.SNR2 = self.average[0]/self.stdev[0]
         # print('SNR_2 = {0:.2f}'.format(self.SNR2))
-
         # print('Average @ 10 degrees = {0:.2e}'.format(self.average[1]))
         # print('StDev   @ 10 degrees = {0:.2e}'.format(self.stdev[1]))
-        self.SNR10 = self.average[1]/self.stdev[1]
         # print('SNR_10 = {0:.2f}'.format(self.SNR10))
 
         a=(self.average_by_sin[1] - self.average_by_sin[0]) / (self.average_by_tan[1] - self.average_by_tan[0])
@@ -544,12 +537,10 @@ class Plot():
 
         return (data - model)
 
-    def model_equation(self,a,TE,TR,T1,T2,x): # x is the flip angle
+    def model_equation(self, a, TE, TR, T1, T2, x): # x is the flip angle
         #This is the equation to be fitted. If you change input parameters, remember to also change them when this method is called
         E1 = np.exp(-TR/T1)
         b = a*(1-E1)#*np.exp(-TE/T2)
-        # return a*np.sin(x*np.pi/180)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(x*np.pi/180))
-        # return a*x/(1+0.5*E1*x**2/(1-E1))                 #approximation for flip angle << Ernst angle
         return E1*x+b
 
     def create_plot(self):
@@ -718,12 +709,8 @@ if __name__ == '__main__':
 
 
 #Improvements to be made:
-#   1 - Many variables imported from the DICOM header have a constant value for all images, but they are being imported
-#       as arrays. Change them to a single value may save computational time.
-#   2 - Make irregular ROI instead of a rectangular one
-#   3 - Increase image size Canvas without changing number of pixels, only zooming (which will result in poorer
-#       resolution but will give the right average)
-#   4 - No fim das contas, o que importa é a diferença no valor de T1 do fígado saudável para o doente. Portanto,
-#       precisamos implementar na GUI uma segunda importação. Assim, o valor do fitting de um par de imagens pré
-#       e de outro par pós contraste indicará se houve uma diferença significativa e, em caso afirmativo, a GUI dará
-#       a resposta se o tecido é doente.
+#   TODO: Many variables imported from the DICOM header have a constant value for all images, but they are being imported as arrays. Change them to a single value may save computational time.
+#   TODO: Make irregular ROI instead of a rectangular one
+#   TODO: Increase image size Canvas without changing number of pixels, only zooming (which will result in poorer resolution but will give the right average)
+#   TODO: No fim das contas, o que importa é a diferença no valor de T1 do fígado saudável para o doente. Portanto,precisamos implementar na GUI uma segunda importação. Assim, o valor do fitting de um par de imagens pré e de outro par pós contraste indicará se houve uma diferença significativa e, em caso afirmativo, a GUI dará a resposta se o tecido é doente.
+#   TODO: Rename variables that mention ECHO so that they mention flipAngle instead
