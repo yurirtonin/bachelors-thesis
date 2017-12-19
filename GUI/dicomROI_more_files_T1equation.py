@@ -103,7 +103,8 @@ class SearchFolder(Frame):
         self.slice_and_flip    = []
         self.FOVx              = []
         self.FOVy              = []
-        self.acquisition_time  = []
+        self.acquisition_duration  = []
+        self.acquisition_type  = []
         self.gradient_echo_train_length = []
         self.slice_and_echo    = np.array([],dtype=np.int64).reshape(0,2)
 
@@ -161,7 +162,8 @@ class SearchFolder(Frame):
             self.rescale_slope.append(np.zeros(len(self.dcm_files[j])))
             self.rescale_intercept.append( np.zeros(len(self.dcm_files[j])))
             self.flip_angle.append( np.zeros(len(self.dcm_files[j])))
-            self.acquisition_time.append( np.zeros(len(self.dcm_files[j])))
+            self.acquisition_duration.append( np.zeros(len(self.dcm_files[j])))
+            self.acquisition_type.append( np.zeros(len(self.dcm_files[j])))
 
 
             # Read parameters from all files and store them in their respective arrays
@@ -192,7 +194,8 @@ class SearchFolder(Frame):
                 self.pixel_spacing   = dcm_read[0x28, 0x30].value
                 self.number_averages = dcm_read[0x18, 0x83].value
 
-                self.acquisition_time[j][i] = dcm_read[0x8, 0x32].value
+                # self.acquisition_type[j][i] = dcm_read[0x18, 0x23].value
+                self.acquisition_duration[j][i] = dcm_read[0x18, 0x9073].value
 
             self.slice_and_flip.append(np.column_stack((self.slice_number[j][:], self.flip_angle[j][:])))
 
@@ -220,6 +223,17 @@ class SearchFolder(Frame):
         print('Echo time       = {0:.2e} seconds'.format(self.TE))
         print('Repetition time = {0:.2e} seconds'.format(self.TR))
         # print('Ernst angle     = {0:.1f} Degrees'.format(self.Ernst_angle))
+
+        print(dcm_read)
+
+
+        print(self.slice_number[j][i])
+        # print(self.acquisition_type[0][0])
+        print(self.acquisition_duration[0][0])
+        print(self.rows)
+        print(self.columns)
+
+        print(dcm_read.dir())
 
         self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # Makes a flat list (remove separation of interior lists, creating one huge list)
 
