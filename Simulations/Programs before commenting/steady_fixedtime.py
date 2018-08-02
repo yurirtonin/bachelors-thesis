@@ -15,21 +15,27 @@ from matplotlib import cm
 #rc('font',**{'family':'sans-serif','serif':['Computer Modern Roman']})
 #rc('text', usetex=True)
 
+
+'''
+In this program we fix the time we want the acquisition to have, an then calculate how many
+images can be acquired for each flip angle we may use. 
+'''
+
 M0 = 100 # initial magnetzation
    
 T1 = 613.9*10**-3 # longitudinal relaxation time
-#T1 = 200.3*10**-3 # longitudinal relaxation time
 
 
-b = 1 
-TR_array = np.empty(b)
+number_of_TRs = 1 
+TR_array = np.empty(number_of_TRs)
 image_matrix = []
-for i in range(0,b):
+
+for i in range(0,number_of_TRs):
     
-    dT = 2*10**-3
-#    TR = (162*10**-3 -(b/2)*dT) + i*dT # repetition time in seconds
+#    dT = 2*10**-3
+#    TR = (162*10**-3 -(number_of_TRs/2)*dT) + i*dT # repetition time in seconds
     TR= 162*10**-3
-    # print(TR)
+
     TR_array[i] = TR
     
     E1 = np.exp(-TR/T1)
@@ -70,11 +76,6 @@ for i in range(0,b):
 #        plt.plot(n_array,Mz_array)
         
         distance_between_elements = 100
-        
-        for n in range(0,N-distance_between_elements):
-            
-            difference = np.abs(Mz_array[n]-Mz_array[n+distance_between_elements])/Mz_array[n]
-#            print('dif = {0:.8e}'.format(difference))
         
         for n in range(0,N-distance_between_elements):
             

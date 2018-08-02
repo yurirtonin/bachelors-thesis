@@ -16,7 +16,7 @@ import scipy as sp
 #rc('text', usetex=True) 
  
 
-n_points = 20
+n_points = 90
 theta = np.linspace(1,n_points,n_points)
 
 index0  = 2
@@ -58,7 +58,7 @@ for a in range(0,1):
         T1 = 200.3*10**-3 # pro contrast           
     
 
-    for j in range(25,26): #vary SNR
+    for j in range(1,26): #vary SNR
         for i in range(1,30): #multiple runs with same T1
             
 #                print('\n===== // ===== // ===== // ===== // ===== // =====')
@@ -80,7 +80,7 @@ for a in range(0,1):
 #            rho = rho0 * np.sin(theta*np.pi/180)*(1-E1)*np.exp(-TE/T2)/(1-E1*np.cos(theta*np.pi/180))
             rho_nonoise = rho
             
-            print(rho[index1-1]/rho[index0-1])
+#            print(rho[index1-1]/rho[index0-1])
             
             SNR = j
             SNR_list.append(SNR)

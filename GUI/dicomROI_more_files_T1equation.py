@@ -445,8 +445,9 @@ class InteractiveCanvas(Frame):
         dcm_pixels = dcm_read.pixel_array      # NOT USING RESCALE HERE BECAUSE THIS IS USED FOR USER VISUALIZATION ONLY. Rescaling is done only in the previous for loop, since that data is the one used for plotting/fitting
         dcm_pixel_values = dcm_pixels          # Extract pixel values
 
-        # dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
-        dcm_image = Image.fromarray(dcm_pixel_values)                       # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
+        #VERMELHO
+        dcm_image = Image.fromarray(dcm_pixel_values).resize((300, 300))  # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
+        # dcm_image = Image.fromarray(dcm_pixel_values)                       # Convert array to image #CHECAR: A SELEÇÃO VAI SER NA IMAGEM ORIGINAL OU RESIZED? PODE SER QUE A MÉDIA MUDE CASO SEJA FEITA EM UMA OU EM OUTRA!
 
         new_tk_image = ImageTk.PhotoImage(dcm_image)  # crete tk image
 

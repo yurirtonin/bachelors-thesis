@@ -19,11 +19,11 @@ class main():
         
         self.n_points = 180
         self.theta = np.linspace(1,self.n_points,self.n_points)
-        self.sin_theta = np.sin(self.theta*np.pi/180)
-        self.tan_theta = np.tan(self.theta*np.pi/180)
+        self.sin_theta = np.sin(self.theta*np.pi/180)#/(self.theta*np.pi/180)
+        self.tan_theta = np.tan(self.theta*np.pi/180)#/(self.theta*np.pi/180)
 
-        self.index0      = 1
-        self.index1      = 9
+        self.index0      = 15
+        self.index1      = 80
 #        self.index2      = 4
 #        self.index3      = 11
 #        self.index4      = 14
@@ -185,16 +185,16 @@ class main():
 #                        plt.legend()
 #                        plt.savefig('signaltheta.png',dpi=600)
                             
-#                        plt.figure(5)
-#    #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
-#    #                    graph1 = plt.plot(X,Y,'o')                    
-#                        graph1 = plt.plot(X,Y,'o')#,label='Pontos p/ 'r'$\theta_1 = 2$ e $\theta_2 = 10$')
-#    #                    graph1 = plt.plot(self.fit_x_points,self.fitted_plot)#, label ='Reta de ajuste')
-#                        plt.xlabel('Sinal / tangente')
-#                        plt.ylabel('Sinal / seno')
-#    #                    plt.legend()
-#        #                plt.show()
-##                        plt.savefig('linear2.png')
+                        plt.figure(5)
+    #                    graph1 = plt.plot(rho_tan,self.fitted_plot)
+    #                    graph1 = plt.plot(X,Y,'o')                    
+                        graph1 = plt.plot(X,Y,'o')#,label='Pontos p/ 'r'$\theta_1 = 2$ e $\theta_2 = 10$')
+    #                    graph1 = plt.plot(self.fit_x_points,self.fitted_plot)#, label ='Reta de ajuste')
+                        plt.xlabel('Sinal / tangente')
+                        plt.ylabel('Sinal / seno')
+    #                    plt.legend()
+        #                plt.show()
+#                        plt.savefig('linear2.png')
 #        
 #                        plt.figure(a)
 #                        plt.axvline(x=15, color='g', linestyle='-')

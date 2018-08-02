@@ -14,8 +14,6 @@ from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from tkinter import filedialog
-
 import numpy as np
 # from scipy import optimize
 from lmfit import minimize, Parameters # lmfit is the package for fitting
@@ -503,16 +501,10 @@ class Plot():
             else: np.savetxt('croped_pixel_array10.txt',croped_pixel_array,fmt='%10.10f')
 
         # print(self.average)
-        print(self.average[1]/self.average[0])
-        # print(self.echoes)
+        # print(self.average[1]/self.average[0])
         self.echoes = np.array(np.unique(self.slice_and_echo[:,1])) # clean array to have only unique angle values
         self.average_by_sin = np.divide(self.average,np.sin(self.echoes*np.pi/180))
         self.average_by_tan = np.divide(self.average,np.tan(self.echoes*np.pi/180))
-
-        # teste. testando aproximação do eq de Ernst para o caso theta << thetaErnst
-        # self.average_by_sin = self.average
-        # self.average_by_tan = np.sin(self.echoes * np.pi / 180)
-
         self.create_plot()
 
         # print(np.sin(self.echoes*np.pi/180))
