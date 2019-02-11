@@ -18,7 +18,7 @@ images = 80 #number of images (1 image for each cut)
 
 M0 = 100 # initial magnetzation
 
-TR = 162*10**-3 # repetition time in seconds
+TR = 3.78*10**-3 # repetition time in seconds
     
 T1 = 700*10**-3 # longitudinal relaxation time
 
@@ -62,7 +62,7 @@ for theta in range(initial_angle,90):
         difference = np.abs(Mz_array[n]-Mz_array[n+distance_between_elements])/Mz_array[n]
 #        print(difference)
         
-        if difference < 0.000001: #if difference is less than 1% between a certain Mz and another Mz ahead, then we have reached steady state
+        if difference < 0.01: #if difference is less than 1% between a certain Mz and another Mz ahead, then we have reached steady state
             n_stable = n
             Mz_stable = Mz_array[n]
             break

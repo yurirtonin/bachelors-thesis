@@ -24,7 +24,7 @@ M0 = 100 # initial magnetzation
    
 T1 = 613.9*10**-3 # longitudinal relaxation time
 
-TR= 162*10**-3
+TR= 3.78*10**-3
 
 E1 = np.exp(-TR/T1)
 
@@ -32,10 +32,12 @@ number_of_angles = 90 #number of flip angles to be analyzed
     
 total_time = 25 #seconds
 
+n_pixels = 224 #number of pixels of image in one direction. This is the amount of phase encoding steps.
+
 images_array = np.empty(number_of_angles)
 theta_array = np.empty(number_of_angles)
 
-N = 200 #number of RF pulses that we use to analyze if steady state is reached
+N = 10000 #number of RF pulses that we use to analyze if steady state is reached
 Mz_array = np.empty(N)
 n_array  = np.empty(N)
 
@@ -60,19 +62,18 @@ for a in range(0,number_of_angles):
     for n in range(0,N-distance_between_elements):
         
         difference = np.abs(Mz_array[n]-Mz_array[n+distance_between_elements])/Mz_array[n] #percentual difference between two Mz values
-        if difference < 10**-5: #if difference between signal Mz is small enough, we consider that steady state was reached
+        if difference < 10**-2: #if difference between signal Mz is small enough, we consider that steady state was reached
             n_stable = n
             Mz_stable = Mz_array[n]
             break
-          
-    images_number = ((total_time - TR*n_stable) / TR)
+        
+    images_number = ((total_time - TR*n_stable) / TR)/n_pixels # total_time = n_images*TR*n_pixels + TR*n_stable
     images_array[a] = images_number
     
 
-    print('=== # === # === RESULTS === # === # === # ')
-    print('Número de imagens que podem ser adquiridas em até 25 segundos: {0:.0f}'.format(images_number))
+    print('\n=== # === # === RESULTS === # === # === # ')
+    print('# de imagens adquiridas em até {0:.0f} segundos: {1:.0f}'.format(total_time,images_array[a]))
     print('Estabilidade atingida após {0:d} pulsos.'.format(n+1))
-    print('Tempo total para aquisição: Ttotal = {0:.2f} segundos'.format(total_time))    
     print('=== # === # === # === # === # === # === # === # === # ')
 
 
@@ -80,11 +81,11 @@ plt.figure(1)
 plt.plot(theta_array,images_array,'ro',markeredgecolor='black',markeredgewidth=0.5)
 plt.xlabel('Angle [Degrees]',fontsize=16)
 plt.ylabel('Number of images',fontsize=16)
-plt.xticks(np.arange(min(theta_array)-1, max(theta_array)+5, 5.0))
+plt.xticks(np.arange(min(theta_array)-1, max(theta_array)+5, 10.0))
 #    plt.yticks(np.arange(100, 155, 10.0))
 plt.title('Apnea time = {0:.0f} seconds'.format(total_time))
 plt.grid(b=True,which='major',axis='both')    
-plt.axes().set_aspect(1)
+#plt.axes().set_aspect(1)
 plt.savefig('images.png',dpi=600)
 
 

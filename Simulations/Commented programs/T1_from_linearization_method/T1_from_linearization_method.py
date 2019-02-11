@@ -32,9 +32,7 @@ class main():
         self.index0      = 1 #index0 = 1 will select angle theta=2, since theta array starts at 1 degree.
         self.index1      = 9
 
-        train = 43
         self.TR = 3.78*10**-3
-        self.TR = self.TR*train
         self.TE = 1.813*10**-3 
         self.T2 = 72*10**-3
         self.T1 = 613.9*10**-3 # pre contrast        
@@ -96,8 +94,8 @@ class main():
 
             plt.figure(1)
             graph = plt.plot(self.theta,rho, label='Signal A + noise 'r'$\sigma$',linewidth=2)
-            plt.xlabel('Flip angle 'r'$\theta$ [Degrees]')
-            plt.ylabel('Signal S')
+            plt.xlabel('Ângulo de flip 'r'$\theta$ [Graus]')
+            plt.ylabel('Sinal')
 #           plt.legend()
             plt.savefig('ernstSimulated.png',dpi=600)
                 

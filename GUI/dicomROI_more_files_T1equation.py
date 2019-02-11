@@ -207,8 +207,9 @@ class SearchFolder(Frame):
         print('Rescale2:  A = {0:.2f}     B = {1:.1f} '.format(self.rescale_slope[0][0],self.rescale_intercept[0][0]))
         print('Rescale10: A = {0:.2f}     B = {1:.1f} '.format(self.rescale_slope[1][0],self.rescale_intercept[1][0]))
 
-        print('Echo Train Length = {0:.0f}'.format(self.gradient_echo_train_length[0][0]))
-        self.total_repetition_time = np.multiply(self.repetition_time,self.gradient_echo_train_length)
+#        print('Echo Train Length = {0:.0f}'.format(self.gradient_echo_train_length[0][0]))
+#        self.total_repetition_time = np.multiply(self.repetition_time,self.gradient_echo_train_length)
+        self.total_repetition_time = np.multiply(self.repetition_time,1)
 
         print('Number of averages = {0:.0f}'.format(self.number_averages))
 
@@ -224,7 +225,7 @@ class SearchFolder(Frame):
         print('Repetition time = {0:.2e} seconds'.format(self.TR))
         # print('Ernst angle     = {0:.1f} Degrees'.format(self.Ernst_angle))
 
-        print(dcm_read)
+#        print(dcm_read)
 
 
         print(self.slice_number[j][i])
@@ -233,7 +234,7 @@ class SearchFolder(Frame):
         print(self.rows)
         print(self.columns)
 
-        print(dcm_read.dir())
+#        print(dcm_read.dir())
 
         self.dcm_files = [item for sublist in self.dcm_files for item in sublist] # Makes a flat list (remove separation of interior lists, creating one huge list)
 
@@ -609,7 +610,7 @@ class Plot():
             self.canvas.draw()
         else:
             self.canvas = FigureCanvasTkAgg(self.plot_figure, self.right_frame)
-            self.canvas.show()
+            self.canvas.draw()
             self.canvas.get_tk_widget().pack()
 
         self.first_plot = False
