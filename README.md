@@ -1,3 +1,3 @@
-# TCC
+# Bachelor Thesis
 
-This repository contains my TCC program
+This repository contains my Bachelor Thesis program
