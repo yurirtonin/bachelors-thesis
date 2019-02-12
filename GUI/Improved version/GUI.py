@@ -13,6 +13,7 @@ from os.path import isfile, join
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
+from tkinter import filedialog
 
 import numpy as np
 # from scipy import optimize
@@ -118,30 +119,17 @@ class SearchFolder(Frame):
                 for child in self.left_frame.winfo_children():
                     child.destroy()
 
-            # if j == 0:
-            # A conditional for selecting all the folders. This is only needed if you want to declare by hand
-            # the folder with the dicom files. If you want the interface to search the folder to appear when you click
-            # the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
-            #     self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
-                # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/901_AXI FLIP 2/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ001/901_AXI FLIP 2/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ002/1201_AXI FLIP 2/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ003/801_AXI FLIP 2/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ004/1201_AXI FLIP 2/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ005/1301-MR1_AXI FLIP 2/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ006/1001_AXI FLIP 2/DICOM'
-
-            # else:
-                # self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
-                # self.dirname = '/Users/yurir.tonin/Dropbox/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/PAC002/1001_AXI FLIP 10/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ001/1001_AXI FLIP 10/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ002/1301_AXI FLIP 10/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ003/901_AXI FLIP 10/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ004/1301_AXI FLIP 10/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ005/1401-MR1_AXI FLIP 10/DICOM'
-                # self.dirname = 'C:/Users/Yuri Tonin/Desktop/Dados/Pacientes/SUBJ006/1101_AXI FLIP 10/DICOM'
+#            if j == 0:
+#                ''' A conditional for selecting all the folders. This is only needed if you want to declare by hand
+#                the folder with the dicom files. If you want the interface to search the folder to appear when you click
+#                the "Search Folder" button, simply remove this conditional leaving only the command  self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
+#                 ''' 
+##                self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
+#                self.dirname = 'C:/Users/yurir.tonin/Dropbox/Graduação/TCC/DICOM/Dados/PAC001/901_AXI FLIP 2/DICOM' 
+#
+#            else:
+##                self.dirname.append(filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
+#                self.dirname = 'C:/Users/yurir.tonin/Dropbox/Graduação/TCC/DICOM/Dados/PAC001/1001_AXI FLIP 10/DICOM'
 
             self.dirname = (filedialog.askdirectory(parent=root, initialdir="/", title='Selecione uma pasta'))
 
